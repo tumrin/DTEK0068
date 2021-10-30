@@ -17,7 +17,7 @@ int main(void) {
 
     while (1)
     {
-        // If input value of F6 is high switch LED on else switch it off
+        // If input value of F6 is high switch LED off else switch it on
         if(PORTF.IN & PIN6_bm)
         {
             PORTF.OUT |= PIN5_bm;
