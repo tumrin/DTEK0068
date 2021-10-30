@@ -10,14 +10,15 @@
 
 #include <avr/io.h>
 
-int main(void) {
-    // Set F5(LED) as output and F6(Button) as input
+int main(void) 
+{
+    // Set PF5(LED) as output and PF6(Button) as input
     PORTF.DIR |= PIN5_bm;
     PORTF.DIR &= ~PIN6_bm;
 
     while (1)
     {
-        // If input value of F6 is high switch LED off else switch it on
+        // If input value of PF6 is high switch LED off else switch it on
         if(PORTF.IN & PIN6_bm)
         {
             PORTF.OUT |= PIN5_bm;
