@@ -71,7 +71,8 @@ int main(void)
             {
                 g_running = 0;
             }
-            else{
+            else
+            {
                 g_counter --;
             }
         }
@@ -79,7 +80,8 @@ int main(void)
         {
             PORTC.OUTTGL = nums[g_counter]; //Display blinking zero
         }
-        else{
+        else
+        {
             VPORTC.OUT = nums[g_counter]; //Display timer when wire was cut
         }
         _delay_ms(1000);
