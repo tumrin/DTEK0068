@@ -35,7 +35,7 @@ volatile uint8_t g_counter; //Counter for tracking current number
 
 ISR(PORTA_PORT_vect)
 {
-    VPORTA.INTFLAGS = 0xFF; //Clear interrupt flags
+    VPORTA.INTFLAGS = SET_ALL; //Clear interrupt flags
     g_running = 0;
     
     /* This prevents display from showing garbage if PA4 is disconnected as
@@ -43,7 +43,7 @@ ISR(PORTA_PORT_vect)
      */
     if(g_counter == 0)
     {
-        PORTC.OUTCLR = 0xFF; //Clear display for toggling to work correctly
+        PORTC.OUTCLR = SET_ALL; //Clear display for toggling to work correctly
     }
     PORTA.PIN4CTRL &= ~PORT_ISC_RISING_gc; //Disable interrupt for PA4
 }
