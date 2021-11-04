@@ -58,7 +58,7 @@ int main(void)
         if(g_running)
         {
             //Decrease counter before displaying so number won't go down
-            // by 1 after disconnecting
+            //by 1 after disconnecting
             g_counter--;
             //Use VPORTC.OUT because we want to overwrite all bits
             //This is not atomic so we use cli() and sei()
@@ -76,7 +76,7 @@ int main(void)
         }
         else
         {
-            cli(); //Not atomic so use cli and sei
+            cli(); //Not atomic so use cli() and sei()
             VPORTC.OUT = nums[g_counter]; //Display timer when wire was cut
             sei();
         }
