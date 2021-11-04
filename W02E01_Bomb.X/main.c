@@ -37,25 +37,17 @@ ISR(PORTA_PORT_vect)
 {
     VPORTA.INTFLAGS = SET_ALL; //Clear interrupt flags
     g_running = 0;
-    
-    /* This prevents display from showing garbage if PA4 is disconnected as
-     * timer hits 0
-     */
-    if(g_counter == 0)
-    {
-        PORTC.OUTCLR = SET_ALL; //Clear display for toggling to work correctly
-    }
-    PORTA.PIN4CTRL &= ~PORT_ISC_RISING_gc; //Disable interrupt for PA4
 }
 
 int main(void) 
 { 
     //Put all number on array so we can use counter variable to index them
-    uint8_t nums[10] = {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, 
-                        NINE};
+    //SET_ALL for handling g_counter == 10 case
+    uint8_t nums[11] = {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, 
+                        NINE, SET_ALL};
     
     g_running = 1;
-    g_counter = 9;
+    g_counter = 10;
     PORTC.DIRSET = SET_ALL; //Set all pins to output
     PORTA.PIN4CTRL = PORT_ISC_RISING_gc; //PA4 rising edge interrupt
     
@@ -65,15 +57,17 @@ int main(void)
     {
         if(g_running)
         {
+            //Decrease counter before displaying so number won't go down
+            // by 1 after disconnecting
+            g_counter--;
             //Use VPORTC.OUT because we want to overwrite all bits
+            //This is not atomic so we use cli() and sei()
+            cli();
             VPORTC.OUT = nums[g_counter];
+            sei();
             if(g_counter == 0)
             {
                 g_running = 0;
-            }
-            else
-            {
-                g_counter --;
             }
         }
         else if(g_counter == 0)
@@ -82,7 +76,9 @@ int main(void)
         }
         else
         {
+            cli(); //Not atomic so use cli and sei
             VPORTC.OUT = nums[g_counter]; //Display timer when wire was cut
+            sei();
         }
         _delay_ms(1000);
     }
