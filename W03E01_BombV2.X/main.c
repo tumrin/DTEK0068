@@ -94,7 +94,7 @@ int main(void)
     
     g_running = 1;
     g_clockticks = 0;
-    uint8_t last_tick = 0; //Previous clocktick
+    uint8_t last_tick = 0; //Tracks previous clockticks value in superloop
     uint8_t counter = 10; //Counter for tracking current number;
     PORTC.DIRSET = SET_ALL; //Set all pins to output
     
@@ -108,22 +108,25 @@ int main(void)
     
     while (1) 
     {
-        if(g_running && (g_clockticks != last_tick))
+        if(g_running)
         {
-            last_tick = g_clockticks; //Update last_tick
-            //Decrease counter before displaying so number won't go down
-            //by 1 after disconnecting
-            counter--;
-            //Use VPORTC.OUT because we want to overwrite all bits
-            VPORTC.OUT = nums[counter];
-            if(counter == 0)
+            if(g_clockticks != last_tick)
             {
-                g_running = 0;
+                //Decrease counter before displaying so number won't go down
+                //by 1 after disconnecting
+                counter--;
+                last_tick = g_clockticks; //Update last_tick
+                
+                //Use VPORTC.OUT because we want to overwrite all bits
+                VPORTC.OUT = nums[counter];
+                if(counter == 0)
+                {
+                    g_running = 0; //Stop running when timer is zero
+                }
             }
         }
-        else if(counter == 0 && (g_clockticks != last_tick))
+        else if(counter == 0)
         {
-            last_tick = g_clockticks;
             PORTC.OUTTGL = nums[counter]; //Display blinking zero
         }
         else
