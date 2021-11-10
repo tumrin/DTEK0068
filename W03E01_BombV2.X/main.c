@@ -6,7 +6,8 @@
  * Note: Wiring is the same as W02E01 with added transistor and direct GND
  * connections from 7 segment display removed. This is slightly
  * different from W03E01 excercise circuit diagram where GPIO pins are connected
- * to different pins on 7 segment display compared to W02E01 circuit.
+ * to different pins on 7 segment display compared to W02E01 circuit and the
+ * circuit help document.
  *
  * Created on 09 November 2021, 14:18
  */
@@ -31,27 +32,35 @@
               | PIN0_bm
 #define NINE PIN6_bm | PIN5_bm | PIN2_bm | PIN1_bm | PIN0_bm
 
+#define COUNTER_START 9 //Starting point for counter
+
 volatile uint8_t g_running; //Global variable for stopping timer after interrupt
-volatile uint16_t g_clockticks; //Keep track of clockticks for countdown
+volatile uint8_t g_clockticks; //Keep track of clockticks for countdown
 
 ISR(PORTA_PORT_vect)
 {
     VPORTA.INTFLAGS = SET_ALL; //Clear interrupt flags
     g_running = 0;
 }
+
 ISR(RTC_PIT_vect)
 {
     static uint8_t pitcount = 0; //Keep track of PIT count with static variable
     RTC.PITINTFLAGS = RTC_PI_bm; //Clear interrupt flags
     
-    //Increments g_clockticks every 8 PITs
-    if(pitcount == 7) //pitcount is still 7 here on 8th interrupt
+    //Stop incrementing after if timer should not be running
+    if(g_running)
     {
-        g_clockticks++;
-        pitcount = 0;
-    }
-    else{
-        pitcount++;
+       //Increments g_clockticks every 8 PITs
+       //Pitcount is still 7 here on 8th interrupt
+       if(pitcount == 7) 
+       {
+           g_clockticks++;
+           pitcount = 0;
+       }
+       else{
+           pitcount++;
+       }   
     }
 }
 
@@ -95,54 +104,49 @@ void rtc_init(void)
 int main(void) 
 {
     //Put all number on array so we can use counter variable to index them
-    //SET_ALL for handling counter == 10 case
-    uint8_t nums[11] = {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, 
-                        NINE, SET_ALL};
+    uint8_t nums[10] = {ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, 
+                        NINE};
     
     g_running = 1;
     g_clockticks = 0;
-    uint8_t last_tick = 0; //Tracks previous clockticks value in superloop
-    uint8_t counter = 10; //Counter for tracking current number;
-    PORTC.DIRSET = SET_ALL; //Set all pins to output
+    
+    PORTC.DIRSET = SET_ALL; //Set all pins to output on port C
     
     //PA4 rising edge interrupt and enable pull up resistor
     PORTA.PIN4CTRL = PORT_PULLUPEN_bm | PORT_ISC_RISING_gc;
     
     PORTF.DIRSET = PIN5_bm; //Set PF5 to output
-    PORTF.OUTSET = PIN5_bm; //Disable onboard LED
+    PORTF.OUTSET = PIN5_bm; //Switch onboard LED off
     
-    set_sleep_mode(SLEEP_MODE_IDLE); //Sleep mode to IDLE
+    set_sleep_mode(SLEEP_MODE_IDLE); //Set sleep mode to IDLE
     
     rtc_init(); //Configure RTC
+    
     sei(); //Enable interrupts
     
     while (1) 
     {
         if(g_running)
         {
-            if(g_clockticks != last_tick)
+            if(g_clockticks < COUNTER_START)
             {
-                //Decrease counter before displaying so number won't go down
-                //by 1 after disconnecting
-                counter--;
-                last_tick = g_clockticks; //Update last_tick
-                
                 //Use VPORTC.OUT because we want to overwrite all bits
-                VPORTC.OUT = nums[counter];
-                if(counter == 0)
-                {
-                    g_running = 0; //Stop running when timer is zero
-                }
+                //We can use g_clokticks instead of seperate counter variable
+                VPORTC.OUT = nums[COUNTER_START-g_clockticks];
+            }
+            else
+            {
+                g_running = 0; //Stop running when timer is zero    
             }
         }
-        else if(counter == 0)
+        else if((COUNTER_START-g_clockticks) == 0)
         {
-            PORTC.OUTSET = nums[counter]; //Display zero
+            PORTC.OUTSET = nums[COUNTER_START-g_clockticks]; //Display zero
             PORTF.OUTTGL = PIN5_bm; //Blink zero and onboard led
         }
         else
         {
-            VPORTC.OUT = nums[counter]; //Display timer when wire was cut
+            VPORTC.OUT = nums[COUNTER_START-g_clockticks]; //Display timer when wire was cut
         }
         sleep_mode(); //Set CPU to IDLE state
     }
