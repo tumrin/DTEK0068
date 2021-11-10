@@ -3,6 +3,10 @@
  * Author: Tuomas Rinne
  * Descriptions: W03E01_BombV2. Enhanced version of previous bomb. Now we use
  * timer instead of delay to decrease timer.
+ * Note: Wiring is the same as W02E01 with added transistor and direct GND
+ * connections from 7 segment display removed. This is slightly
+ * different from W03E01 excercise circuit diagram where GPIO pins are connected
+ * to different pins on 7 segment display compared to W02E01 circuit.
  *
  * Created on 09 November 2021, 14:18
  */
@@ -29,7 +33,6 @@
 
 volatile uint8_t g_running; //Global variable for stopping timer after interrupt
 volatile uint16_t g_clockticks; //Keep track of clockticks for countdown
-volatile uint16_t g_pitcount = 0; //Keep track of PIT count
 
 ISR(PORTA_PORT_vect)
 {
@@ -38,14 +41,18 @@ ISR(PORTA_PORT_vect)
 }
 ISR(RTC_PIT_vect)
 {
+    static uint8_t pitcount = 0; //Keep track of PIT count with static variable
     RTC.PITINTFLAGS = RTC_PI_bm; //Clear interrupt flags
     
     //Increments g_clockticks every 8 PITs
-    if(g_pitcount % 8 == 0)
+    if(pitcount == 7) //pitcount is still 7 here on 8th interrupt
     {
         g_clockticks++;
+        pitcount = 0;
     }
-    g_pitcount++;
+    else{
+        pitcount++;
+    }
 }
 
 //Copied from course materials with some modifications
