@@ -101,6 +101,9 @@ int main(void)
     //PA4 rising edge interrupt and enable pull up resistor
     PORTA.PIN4CTRL = PORT_PULLUPEN_bm | PORT_ISC_RISING_gc;
     
+    PORTF.DIRSET = PIN5_bm; //Set PF5 to output
+    PORTF.OUTSET = PIN5_bm; //Disable onboard LED
+    
     set_sleep_mode(SLEEP_MODE_IDLE); //Sleep mode to IDLE
     
     rtc_init(); //Configure RTC
@@ -127,7 +130,8 @@ int main(void)
         }
         else if(counter == 0)
         {
-            PORTC.OUTTGL = nums[counter]; //Display blinking zero
+            PORTC.OUTSET = nums[counter]; //Display zero
+            PORTF.OUTTGL = PIN5_bm; //Blink zero and onboard led
         }
         else
         {
