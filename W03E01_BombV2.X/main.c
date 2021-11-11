@@ -1,7 +1,7 @@
 /*
  * File:   main.c
  * Author: Tuomas Rinne
- * Descriptions: W03E01_BombV2. Enhanced version of previous bomb. Now we use
+ * Description: W03E01_BombV2. Enhanced version of previous bomb. Now we use
  * timer instead of delay to decrease timer.
  * Note: Wiring is the same as W02E01 with added transistor and direct GND
  * connections from 7 segment display removed. This is slightly
@@ -11,6 +11,7 @@
  *
  * Created on 09 November 2021, 14:18
  */
+
 #include <avr/io.h>
 #include <avr/cpufunc.h>
 #include <avr/interrupt.h>
@@ -58,7 +59,8 @@ ISR(RTC_PIT_vect)
            g_clockticks++;
            pitcount = 0;
        }
-       else{
+       else
+       {
            pitcount++;
        }   
     }
