@@ -46,7 +46,7 @@ ISR(PORTA_PORT_vect)
 
 ISR(RTC_PIT_vect)
 {
-    static uint8_t pitcount = 0; //Keep track of PIT count with static variable
+    static uint8_t pit_count = 0; //Keep track of PIT count with static variable
     RTC.PITINTFLAGS = RTC_PI_bm; //Clear interrupt flags
     
     //Stop incrementing after if timer should not be running
@@ -54,14 +54,14 @@ ISR(RTC_PIT_vect)
     {
        //Increments g_clockticks every 8 PITs
        //Pitcount is still 7 here on 8th interrupt
-       if(pitcount == 7) 
+       if(pit_count == 7) 
        {
            g_clockticks++;
-           pitcount = 0;
+           pit_count = 0;
        }
        else
        {
-           pitcount++;
+           pit_count++;
        }   
     }
 }
