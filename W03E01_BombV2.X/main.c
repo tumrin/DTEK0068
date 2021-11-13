@@ -147,7 +147,8 @@ int main(void)
         }
         else
         {
-            VPORTC.OUT = nums[COUNTER_START-g_clockticks]; //Display timer when wire was cut
+            //Display timer when wire was cut
+            VPORTC.OUT = nums[COUNTER_START-g_clockticks];
         }
         sleep_mode(); //Set CPU to IDLE state
     }
