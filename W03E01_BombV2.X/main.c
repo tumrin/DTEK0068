@@ -3,11 +3,10 @@
  * Author: Tuomas Rinne
  * Description: W03E01_BombV2. Enhanced version of previous bomb. Now we use
  * timer instead of delay to decrease timer.
- * Note: Wiring is the same as W02E01 with added transistor and direct GND
- * connections from 7 segment display removed. This is slightly
- * different from W03E01 excercise circuit diagram where GPIO pins are connected
- * to different pins on 7 segment display compared to W02E01 circuit and the
- * circuit help document.
+ * Note: Wiring is the same as W02E01 and circuit help document with added 
+ * transistor and direct GND connections from 7 segment display removed. This is
+ * slightly different from W03E01 excercise circuit diagram where GPIO pins are 
+ * connected to different pins on 7 segment display.
  *
  * Created on 09 November 2021, 14:18
  */
@@ -49,7 +48,7 @@ ISR(RTC_PIT_vect)
     static uint8_t pit_count = 0; //Keep track of PIT count with static variable
     RTC.PITINTFLAGS = RTC_PI_bm; //Clear interrupt flags
     
-    //Stop incrementing after if timer should not be running
+    //Stop incrementing if timer should not be running
     if(g_running)
     {
        //Increments g_clockticks every 8 PITs
