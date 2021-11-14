@@ -142,7 +142,7 @@ int main(void)
         }
         else if((COUNTER_START-g_clockticks) == 0)
         {
-            PORTC.OUTSET = nums[COUNTER_START-g_clockticks]; //Display zero
+            VPORTC.OUT = nums[COUNTER_START-g_clockticks]; //Display zero
             PORTF.OUTTGL = PIN5_bm; //Blink zero and onboard led
         }
         else
