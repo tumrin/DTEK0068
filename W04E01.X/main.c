@@ -5,9 +5,9 @@
  * Created on 16 November 2021, 13:16
  */
 
-#define F_CPU 333333
 #include <avr/io.h>
-#include <util/delay.h>
+#include <avr/cpufunc.h>
+#include <avr/interrupt.h>
 
 #define SERVO_PWM_PERIOD        (0x1046) 
 #define SERVO_PWM_DUTY_NEUTRAL  (0x0138)
@@ -27,6 +27,54 @@
               | PIN0_bm
 #define NINE PIN6_bm | PIN5_bm | PIN2_bm | PIN1_bm | PIN0_bm
 #define A_LETTER PIN6_bm | PIN5_bm | PIN4_bm | PIN2_bm | PIN1_bm | PIN0_bm
+
+volatile uint8_t g_click = 0;
+
+ISR(RTC_PIT_vect)
+{
+    RTC.PITINTFLAGS = RTC_PI_bm; //Clear interrupt flags
+    if(g_click)
+    {
+        TCA0.SINGLE.CMP2BUF = SERVO_PWM_DUTY_MAX; 
+        g_click = 0;
+    }
+    else
+    {
+        TCA0.SINGLE.CMP2BUF = SERVO_PWM_DUTY_NEUTRAL;     
+    }
+}
+
+//Copied from course materials with some modifications
+void rtc_init(void)
+{
+    uint8_t temp;
+    
+    // Disable oscillator 
+    temp = CLKCTRL.XOSC32KCTRLA;
+    temp &= ~CLKCTRL_ENABLE_bm;
+    ccp_write_io((void*) &CLKCTRL.XOSC32KCTRLA, temp);
+    
+    // Wait for the clock to be released (0 = unstable, unused) 
+    while (CLKCTRL.MCLKSTATUS & CLKCTRL_XOSC32KS_bm);
+    
+    // Select external crystal (SEL = 0) 
+    temp = CLKCTRL.XOSC32KCTRLA;
+    temp &= ~CLKCTRL_SEL_bm;
+    ccp_write_io((void*) &CLKCTRL.XOSC32KCTRLA, temp);
+    
+    // Enable oscillator 
+    temp = CLKCTRL.XOSC32KCTRLA;
+    temp |= CLKCTRL_ENABLE_bm;
+    ccp_write_io((void*) &CLKCTRL.XOSC32KCTRLA, temp);
+    
+    // Wait for the clock to stabilize 
+    while (RTC.STATUS > 0);
+    
+    // Configure RTC module 
+    // Select 32.768 kHz external oscillator 
+    RTC.CLKSEL = RTC_CLKSEL_TOSC32K_gc;
+    
+}
 
 int main(void) 
 { 
@@ -71,6 +119,10 @@ int main(void)
     
     VREF.CTRLA |= (0x2<<4); // Set internal voltage ref to 2.5V
     
+    rtc_init();
+    
+    sei(); //Enable interrupts
+    
     while (1)
     {
         //Read LDR value
@@ -106,12 +158,13 @@ int main(void)
         } 
         uint16_t treshold = ADC0.RES/100;
         VPORTC.OUT = nums[treshold];
-        if(res>=treshold)
+        if((res>=treshold))
         {
-            TCA0.SINGLE.CMP2BUF = SERVO_PWM_DUTY_MAX; 
+            g_click = 1;
+                        //Set period to 4096 cycles (1/8 second) and enable PIT function 
+            RTC.PITCTRLA = RTC_PERIOD_CYC8192_gc | RTC_PITEN_bm;
+            // Enable Periodic Interrupt 
+            RTC.PITINTCTRL = RTC_PI_bm;
         }
-        _delay_ms(100);
-        TCA0.SINGLE.CMP2BUF = SERVO_PWM_DUTY_NEUTRAL; 
-        _delay_ms(100);
     }
 }
