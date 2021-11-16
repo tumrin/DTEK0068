@@ -1,6 +1,8 @@
 /*
  * File:   main.c
- * Author: dtek
+ * Author: Tuomas Rinne
+ * Description: W04E01 DinoPlayer. Program to move servo to click spacebar when
+ * photoresistor notices obstacle in game.
  *
  * Created on 16 November 2021, 13:16
  */
@@ -11,8 +13,8 @@
 
 #define SERVO_PWM_PERIOD        (0x1046) 
 #define SERVO_PWM_DUTY_NEUTRAL  (0x0138)
-#define SERVO_PWM_DUTY_MAX (0x01A0)
-#define SERVO_PWM_DUTY_MIN (0x00D0)
+#define SERVO_PWM_DUTY_MAX      (0x01A0)
+#define SERVO_PWM_DUTY_MIN      (0x00D0)
 
 //Bitmasks for numbers on display
 #define ZERO PIN5_bm | PIN4_bm | PIN3_bm | PIN2_bm | PIN1_bm | PIN0_bm
@@ -28,6 +30,7 @@
 #define NINE PIN6_bm | PIN5_bm | PIN2_bm | PIN1_bm | PIN0_bm
 #define A_LETTER PIN6_bm | PIN5_bm | PIN4_bm | PIN2_bm | PIN1_bm | PIN0_bm
 
+// Global variable to keep track when servo should click spacebar
 volatile uint8_t g_click = 0;
 
 ISR(RTC_PIT_vect)
@@ -73,7 +76,6 @@ void rtc_init(void)
     // Configure RTC module 
     // Select 32.768 kHz external oscillator 
     RTC.CLKSEL = RTC_CLKSEL_TOSC32K_gc;
-    
 }
 
 int main(void) 
@@ -101,7 +103,6 @@ int main(void)
     // Enable TCA0 peripheral 
     TCA0.SINGLE.CTRLA |= TCA_SINGLE_ENABLE_bm;
     
-    
     //Servo
     // Set PE0 as input 
     PORTE.DIRCLR = PIN0_bm; 
@@ -117,9 +118,9 @@ int main(void)
     PORTF.DIRCLR = PIN4_bm; 
     PORTF.PIN4CTRL = PORT_ISC_INPUT_DISABLE_gc; 
     
-    VREF.CTRLA |= (0x2<<4); // Set internal voltage ref to 2.5V
+    VREF.CTRLA |= (0x2 << 4); // Set internal voltage ref to 2.5V
     
-    rtc_init();
+    rtc_init(); //Initialize RCT
     
     sei(); //Enable interrupts
     
@@ -132,36 +133,35 @@ int main(void)
         //MUXPOS to AN8 (PE0) for LDR
         ADC0.MUXPOS  = ADC_MUXPOS_AIN8_gc;
         // Start conversion (bit cleared when conversion is done) 
-        ADC0.COMMAND = ADC_STCONV_bm; 
-        // When the conversion is done, the RESRDY bit in the ADC0.INTFLAGS 
-        // gets set by the hardware. Without interrupt handler, the program 
-        // must wait for that bit to get set before reading the ADC result. 
-        while (!(ADC0.INTFLAGS & ADC_RESRDY_bm)) 
-        { 
-            ;
-        } 
-        // RESRDY bit must be cleared before another conversion. 
-        // Either by writing '1' over it or reading value from ADC0.RES. 
-        //ADC0.INTFLAGS = ADC_RESRDY_bm;
+        ADC0.COMMAND = ADC_STCONV_bm;   
+        //Wait for hardware to set RESRDY bit
+        while (!(ADC0.INTFLAGS & ADC_RESRDY_bm));
+        
+        //Take 1/100 of result to be easily comparable with threshold
+        //and clear RSRDY by reading ADC0.RES
         uint16_t res = ADC0.RES/100;
         
         //Read potentiometer value
-        //Voltage reference to Vdd
         ADC0.CTRLC &= ~(0x03 << 4); //Clear REFSEL bits
-        ADC0.CTRLC |= ADC_REFSEL_VDDREF_gc;
+        ADC0.CTRLC |= ADC_REFSEL_VDDREF_gc; //Voltage reference to Vdd
+        
         //MUXPOS to AN14 (PF4) for potentiometer
         ADC0.MUXPOS  = ADC_MUXPOS_AIN14_gc;
-        ADC0.COMMAND = ADC_STCONV_bm; 
-        while (!(ADC0.INTFLAGS & ADC_RESRDY_bm)) 
-        { 
-            ;
-        } 
+        
+        ADC0.COMMAND = ADC_STCONV_bm; //Start conversion
+        
+        //Wait for hardware to set RESRDY bit
+        while (!(ADC0.INTFLAGS & ADC_RESRDY_bm));
+        
+        // Take 1/100 of ADC0 result to fit into 7 segment and clear RSRDY bit
         uint16_t treshold = ADC0.RES/100;
+        
         VPORTC.OUT = nums[treshold];
-        if((res>=treshold))
+        if(res >= treshold)
         {
             g_click = 1;
-                        //Set period to 4096 cycles (1/8 second) and enable PIT function 
+            
+            //Set period to 4096 cycles (1/8 second) and enable PIT function 
             RTC.PITCTRLA = RTC_PERIOD_CYC8192_gc | RTC_PITEN_bm;
             // Enable Periodic Interrupt 
             RTC.PITINTCTRL = RTC_PI_bm;
