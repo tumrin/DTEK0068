@@ -27,11 +27,12 @@
 #define EIGHT PIN6_bm | PIN5_bm | PIN4_bm | PIN3_bm | PIN2_bm | PIN1_bm \
               | PIN0_bm
 #define NINE PIN6_bm | PIN5_bm | PIN2_bm | PIN1_bm | PIN0_bm
+#define A_LETTER PIN6_bm | PIN5_bm | PIN4_bm | PIN2_bm | PIN1_bm | PIN0_bm
 
 int main(void) 
 { 
     uint8_t nums[] = {
-        ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE
+        ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, A_LETTER
     };
     PORTC.DIRSET = 0xFF;
     // Route TCA0 PWM waveform to PORTB 
@@ -56,8 +57,10 @@ int main(void)
     //    2. Have pull-up disabled (this is start-up default setting) 
     //    3. Have digital input buffer disabled 
     // Using AN0 (PD0) (default in ADC0.MUXPOS)   
-    // Set PD0 as input 
+    // Set PE0 as input 
     PORTE.DIRCLR = PIN0_bm; 
+    // Set PF4 as input 
+    PORTF.DIRCLR = PIN4_bm; 
     // No pull-up, no invert, disable input buffer 
     PORTE.PIN0CTRL = PORT_ISC_INPUT_DISABLE_gc; 
     // Use Vdd as reference voltage and set prescaler of 16 
