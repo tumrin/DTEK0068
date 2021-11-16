@@ -8,7 +8,7 @@
 #define F_CPU 333333
 #include <avr/io.h>
 #include <util/delay.h>
-#include <stdio.h>
+
 #define SERVO_PWM_PERIOD        (0x1046) 
 #define SERVO_PWM_DUTY_NEUTRAL  (0x0138)
 #define SERVO_PWM_DUTY_MAX (0x01A0)
@@ -34,7 +34,9 @@ int main(void)
     uint8_t nums[] = {
         ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, A_LETTER
     };
+    //Set PORTC pins to output for display
     PORTC.DIRSET = 0xFF;
+    
     // Route TCA0 PWM waveform to PORTB 
     PORTMUX.TCAROUTEA |= PORTMUX_TCA0_PORTB_gc; 
     // Set 0-WO2 (PB2) as digital output 
@@ -52,15 +54,10 @@ int main(void)
     // Enable TCA0 peripheral 
     TCA0.SINGLE.CTRLA |= TCA_SINGLE_ENABLE_bm;
     
-    // ADC input pin must be: 
-    //    1. Configured as input 
-    //    2. Have pull-up disabled (this is start-up default setting) 
-    //    3. Have digital input buffer disabled 
-    // Using AN0 (PD0) (default in ADC0.MUXPOS)   
+    
+    //Servo
     // Set PE0 as input 
     PORTE.DIRCLR = PIN0_bm; 
-    // Set PF4 as input 
-    PORTF.DIRCLR = PIN4_bm; 
     // No pull-up, no invert, disable input buffer 
     PORTE.PIN0CTRL = PORT_ISC_INPUT_DISABLE_gc; 
     // Use Vdd as reference voltage and set prescaler of 16 
@@ -68,26 +65,43 @@ int main(void)
     // Enable (power up) ADC (10-bit resolution is default) 
     ADC0.CTRLA |= ADC_ENABLE_bm;
     ADC0.SAMPCTRL = ADC_SAMPLEN;
-    
     ADC0.CTRLE |= ADC_INITDLY_DLY16_gc;
     
-    ADC0.MUXPOS  = ADC_MUXPOS_AIN8_gc;
+    //Potentiometer
+    // Set PF4 as input for potentiometer
+    PORTF.DIRCLR = PIN4_bm; 
+    PORTF.PIN4CTRL = PORT_ISC_INPUT_DISABLE_gc; 
     
     while (1) 
     {
-         // Start conversion (bit cleared when conversion is done) 
-         ADC0.COMMAND = ADC_STCONV_bm; 
-         // When the conversion is done, the RESRDY bit in the ADC0.INTFLAGS 
-         // gets set by the hardware. Without interrupt handler, the program 
-         // must wait for that bit to get set before reading the ADC result. 
-         while (!(ADC0.INTFLAGS & ADC_RESRDY_bm)) 
-         { 
+        ADC0.MUXPOS  = ADC_MUXPOS_AIN8_gc;
+        // Start conversion (bit cleared when conversion is done) 
+        ADC0.COMMAND = ADC_STCONV_bm; 
+        // When the conversion is done, the RESRDY bit in the ADC0.INTFLAGS 
+        // gets set by the hardware. Without interrupt handler, the program 
+        // must wait for that bit to get set before reading the ADC result. 
+        while (!(ADC0.INTFLAGS & ADC_RESRDY_bm)) 
+        { 
             ;
-         } 
-         // RESRDY bit must be cleared before another conversion. 
-         // Either by writing '1' over it or reading value from ADC0.RES. 
-         //ADC0.INTFLAGS = ADC_RESRDY_bm;
-         uint16_t res = ADC0.RES;
-         VPORTC.OUT = nums[res/100];
-    }  
+        } 
+        // RESRDY bit must be cleared before another conversion. 
+        // Either by writing '1' over it or reading value from ADC0.RES. 
+        //ADC0.INTFLAGS = ADC_RESRDY_bm;
+        uint16_t res = ADC0.RES;
+        ADC0.MUXPOS  = ADC_MUXPOS_AIN14_gc;
+        ADC0.COMMAND = ADC_STCONV_bm; 
+        while (!(ADC0.INTFLAGS & ADC_RESRDY_bm)) 
+        { 
+            ;
+        } 
+        uint16_t trimmer = ADC0.RES;
+        VPORTC.OUT = nums[trimmer/100];
+        if(res/100>6)
+        {
+            TCA0.SINGLE.CMP2BUF = SERVO_PWM_DUTY_MAX; 
+        }
+        _delay_ms(100);
+        TCA0.SINGLE.CMP2BUF = SERVO_PWM_DUTY_NEUTRAL; 
+        _delay_ms(100);
+    }
 }
