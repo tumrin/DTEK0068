@@ -69,11 +69,12 @@ int main(void)
     PORTF.DIRCLR = PIN4_bm; 
     PORTF.PIN4CTRL = PORT_ISC_INPUT_DISABLE_gc; 
     
-    VREF.CTRLA |= 0x2; // Set internal voltage ref to 2.5V
+    VREF.CTRLA |= (0x2<<4); // Set internal voltage ref to 2.5V
     
     while (1)
     {
-        ADC0.CTRLC &= ~(0x3 << 4); //Clear REFSEL bits
+        //Read LDR value
+        ADC0.CTRLC &= ~(0x03 << 4); //Clear REFSEL bits
         //Voltage reference to internal 2.5V
         ADC0.CTRLC |= ADC_REFSEL_INTREF_gc;
         //MUXPOS to AN8 (PE0) for LDR
@@ -90,11 +91,11 @@ int main(void)
         // RESRDY bit must be cleared before another conversion. 
         // Either by writing '1' over it or reading value from ADC0.RES. 
         //ADC0.INTFLAGS = ADC_RESRDY_bm;
-        uint16_t res = ADC0.RES;
+        uint16_t res = ADC0.RES/100;
         
-        
+        //Read potentiometer value
         //Voltage reference to Vdd
-        ADC0.CTRLC &= ~(0x3 << 4); //Clear REFSEL bits
+        ADC0.CTRLC &= ~(0x03 << 4); //Clear REFSEL bits
         ADC0.CTRLC |= ADC_REFSEL_VDDREF_gc;
         //MUXPOS to AN14 (PF4) for potentiometer
         ADC0.MUXPOS  = ADC_MUXPOS_AIN14_gc;
@@ -103,9 +104,9 @@ int main(void)
         { 
             ;
         } 
-        uint16_t trimmer = ADC0.RES;
-        VPORTC.OUT = nums[trimmer/100];
-        if(res/100>6)
+        uint16_t treshold = ADC0.RES/100;
+        VPORTC.OUT = nums[treshold];
+        if(res>=treshold)
         {
             TCA0.SINGLE.CMP2BUF = SERVO_PWM_DUTY_MAX; 
         }
