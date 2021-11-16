@@ -13,7 +13,6 @@
 #define SERVO_PWM_DUTY_NEUTRAL  (0x0138)
 #define SERVO_PWM_DUTY_MAX (0x01A0)
 #define SERVO_PWM_DUTY_MIN (0x00D0)
-#define ADC_SAMPLEN 7
 
 //Bitmasks for numbers on display
 #define ZERO PIN5_bm | PIN4_bm | PIN3_bm | PIN2_bm | PIN1_bm | PIN0_bm
@@ -60,20 +59,24 @@ int main(void)
     PORTE.DIRCLR = PIN0_bm; 
     // No pull-up, no invert, disable input buffer 
     PORTE.PIN0CTRL = PORT_ISC_INPUT_DISABLE_gc; 
-    // Use Vdd as reference voltage and set prescaler of 16 
-    ADC0.CTRLC |= ADC_PRESC_DIV16_gc | ADC_REFSEL_VDDREF_gc; 
+    // Use 2.5v  as reference voltage and set prescaler of 16 
+    ADC0.CTRLC |= ADC_PRESC_DIV16_gc; 
     // Enable (power up) ADC (10-bit resolution is default) 
     ADC0.CTRLA |= ADC_ENABLE_bm;
-    ADC0.SAMPCTRL = ADC_SAMPLEN;
-    ADC0.CTRLE |= ADC_INITDLY_DLY16_gc;
     
     //Potentiometer
     // Set PF4 as input for potentiometer
     PORTF.DIRCLR = PIN4_bm; 
     PORTF.PIN4CTRL = PORT_ISC_INPUT_DISABLE_gc; 
     
-    while (1) 
+    VREF.CTRLA |= 0x2; // Set internal voltage ref to 2.5V
+    
+    while (1)
     {
+        ADC0.CTRLC &= ~(0x3 << 4); //Clear REFSEL bits
+        //Voltage reference to internal 2.5V
+        ADC0.CTRLC |= ADC_REFSEL_INTREF_gc;
+        //MUXPOS to AN8 (PE0) for LDR
         ADC0.MUXPOS  = ADC_MUXPOS_AIN8_gc;
         // Start conversion (bit cleared when conversion is done) 
         ADC0.COMMAND = ADC_STCONV_bm; 
@@ -88,6 +91,12 @@ int main(void)
         // Either by writing '1' over it or reading value from ADC0.RES. 
         //ADC0.INTFLAGS = ADC_RESRDY_bm;
         uint16_t res = ADC0.RES;
+        
+        
+        //Voltage reference to Vdd
+        ADC0.CTRLC &= ~(0x3 << 4); //Clear REFSEL bits
+        ADC0.CTRLC |= ADC_REFSEL_VDDREF_gc;
+        //MUXPOS to AN14 (PF4) for potentiometer
         ADC0.MUXPOS  = ADC_MUXPOS_AIN14_gc;
         ADC0.COMMAND = ADC_STCONV_bm; 
         while (!(ADC0.INTFLAGS & ADC_RESRDY_bm)) 
