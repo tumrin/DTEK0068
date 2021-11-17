@@ -134,7 +134,7 @@ int main(void)
     PORTF.DIRCLR = PIN4_bm; 
     PORTF.PIN4CTRL = PORT_ISC_INPUT_DISABLE_gc; 
     
-    VREF.CTRLA |= (0x2 << 4); // Set internal voltage ref to 2.5V
+    VREF.CTRLA |= VREF_ADC0REFSEL_2V5_gc; // Set internal voltage ref to 2.5V
     
     rtc_init(); //Initialize RCT
     
@@ -143,7 +143,7 @@ int main(void)
     while (1)
     {
         //Read LDR value
-        ADC0.CTRLC &= ~(0x03 << 4); //Clear REFSEL bits
+        ADC0.CTRLC &= ~(ADC_REFSEL_VDDREF_gc); //Clear REFSEL bits
         //Voltage reference to internal 2.5V
         ADC0.CTRLC |= ADC_REFSEL_INTREF_gc;
         //MUXPOS to AN8 (PE0) for LDR
@@ -158,7 +158,6 @@ int main(void)
         uint16_t res = ADC0.RES/100;
         
         //Read potentiometer value
-        ADC0.CTRLC &= ~(0x03 << 4); //Clear REFSEL bits
         ADC0.CTRLC |= ADC_REFSEL_VDDREF_gc; //Voltage reference to Vdd
         
         //MUXPOS to AN14 (PF4) for potentiometer
@@ -178,7 +177,7 @@ int main(void)
             g_click = 1;
                 
             while (RTC.STATUS > 0); // Wait for PERBUSY flag
-        
+            
             //Set period to 8192 cycles (1/4 second)
             RTC.PER = 8192;
         }
