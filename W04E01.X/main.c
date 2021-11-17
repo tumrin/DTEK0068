@@ -33,17 +33,28 @@
 // Global variable to keep track when servo should click spacebar
 volatile uint8_t g_click = 0;
 
-ISR(RTC_PIT_vect)
+//Global variable to keep track of returning to neutral position so it doesn't
+// get interrupted by new clicking movement
+volatile uint8_t g_return = 0;
+
+ISR(RTC_CNT_vect)
 {
-    RTC.PITINTFLAGS = RTC_PI_bm; //Clear interrupt flags
-    if(g_click)
+    RTC.INTFLAGS = RTC_OVF_bm; //Clear interrupt flags
+    
+    if(!g_return && g_click)
     {
         TCA0.SINGLE.CMP2BUF = SERVO_PWM_DUTY_MAX; 
         g_click = 0;
+        g_return = 1;
+        while (RTC.STATUS > 0); // Wait for PERBUSY flag
+        //Set period to 4096 cycles (125ms)
+        RTC.PER = 4096;
+        //RTC.INTCTRL |= RTC_OVF_bm;/* Enable: enabled */
     }
     else
     {
-        TCA0.SINGLE.CMP2BUF = SERVO_PWM_DUTY_NEUTRAL;     
+        TCA0.SINGLE.CMP2BUF = SERVO_PWM_DUTY_NEUTRAL;
+        g_return = 0;
     }
 }
 
@@ -73,9 +84,14 @@ void rtc_init(void)
     // Wait for the clock to stabilize 
     while (RTC.STATUS > 0);
     
+     //Set period to 8192 cycles (1/4 second)
+    RTC.PER = 8192;
+    
     // Configure RTC module 
     // Select 32.768 kHz external oscillator 
     RTC.CLKSEL = RTC_CLKSEL_TOSC32K_gc;
+    RTC.INTCTRL |= RTC_OVF_bm; // Enable OVF interrupt
+    RTC.CTRLA = RTC_RTCEN_bm; //Enable RTC
 }
 
 int main(void) 
@@ -156,15 +172,14 @@ int main(void)
         // Take 1/100 of ADC0 result to fit into 7 segment and clear RSRDY bit
         uint16_t treshold = ADC0.RES/100;
         
-        VPORTC.OUT = nums[treshold];
-        if(res >= treshold)
+        VPORTC.OUT = nums[treshold]; //Display current threshold
+        if(res >= treshold && !g_return)
         {
             g_click = 1;
-            
-            //Set period to 4096 cycles (1/8 second) and enable PIT function 
-            RTC.PITCTRLA = RTC_PERIOD_CYC8192_gc | RTC_PITEN_bm;
-            // Enable Periodic Interrupt 
-            RTC.PITINTCTRL = RTC_PI_bm;
+                
+        while (RTC.STATUS > 0); // Wait for PERBUSY flag
+        //Set period to 8192 cycles (1/4 second)
+        RTC.PER = 8192;
         }
     }
 }
