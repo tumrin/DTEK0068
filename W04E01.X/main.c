@@ -84,7 +84,7 @@ void rtc_init(void)
     // Wait for the clock to stabilize 
     while (RTC.STATUS > 0);
     
-     //Set period to 8192 cycles (1/4 second)
+     //Set period to  Enable OVF interrupt8192 cycles (1/4 second)
     RTC.PER = 8192;
     
     // Configure RTC module 
@@ -169,7 +169,7 @@ int main(void)
         //Wait for hardware to set RESRDY bit
         while (!(ADC0.INTFLAGS & ADC_RESRDY_bm));
         
-        // Take 1/100 of ADC0 result to fit into 7 segment and clear RSRDY bit
+        //Take 1/100 of ADC0 result to fit into 7 segment and clear RSRDY bit
         uint16_t treshold = ADC0.RES/100;
         
         VPORTC.OUT = nums[treshold]; //Display current threshold
@@ -177,9 +177,10 @@ int main(void)
         {
             g_click = 1;
                 
-        while (RTC.STATUS > 0); // Wait for PERBUSY flag
-        //Set period to 8192 cycles (1/4 second)
-        RTC.PER = 8192;
+            while (RTC.STATUS > 0); // Wait for PERBUSY flag
+        
+            //Set period to 8192 cycles (1/4 second)
+            RTC.PER = 8192;
         }
     }
 }
