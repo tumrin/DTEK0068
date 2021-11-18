@@ -43,7 +43,7 @@ ISR(RTC_CNT_vect)
     
     if(!g_return && g_click)
     {
-        TCA0.SINGLE.CMP2BUF = SERVO_PWM_DUTY_MAX; 
+        TCA0.SINGLE.CMP2BUF = SERVO_PWM_DUTY_MAX; //Press spacebar
         g_click = 0;
         g_return = 1;
         while (RTC.STATUS > 0) //Wait for PERBUSY flag
@@ -51,10 +51,10 @@ ISR(RTC_CNT_vect)
             ;
         }
         
-        //Set period to 4096 cycles (125ms) because we want to return servo to
+        //Set period to 100 because we want to return servo to
         //neutral position after pressing spacebar but also want to give
         //movement at least 100ms to complete
-        RTC.PER = 4096;
+        RTC.PER = 100;
     }
     else
     {
@@ -95,14 +95,14 @@ void rtc_init(void)
         ;
     }
     
-     //Set period to  Enable OVF interrupt8192 cycles (1/4 second)
-    RTC.PER = 8192;
-    
     // Configure RTC module 
     // Select 32.768 kHz external oscillator 
     RTC.CLKSEL = RTC_CLKSEL_TOSC32K_gc;
     RTC.INTCTRL |= RTC_OVF_bm; // Enable OVF interrupt
-    RTC.CTRLA = RTC_RTCEN_bm; //Enable RTC
+    
+    //Enable RTC and use 32 prescaler so we get convinient 1000 == 1sec for 
+    //RTC.PER register values
+    RTC.CTRLA = RTC_RTCEN_bm | RTC_PRESCALER_DIV32_gc;
 }
 
 /**
@@ -208,7 +208,7 @@ int main(void)
         uint8_t ldr_res = read_ldr();
         uint8_t treshold = read_pot();
         VPORTC.OUT = nums[treshold]; //Display current threshold
-        if(ldr_res >= treshold && !g_return)
+        if(ldr_res >= treshold && !g_return && !g_click)
         {
             g_click = 1;
                 
@@ -217,13 +217,13 @@ int main(void)
                 ;
             }
             
-            /**Set period to 8192 cycles (250ms)
+            /**Set period to 250ms
             *This depends on how far the LDR is from dino meaning
-            *how fast sould the servo press spacebar when cactus is detected
-            *Havin atleast 100ms "delay" here also ensures that servo has
-            *atleast 100ms to move to neutral position before clicking again
+            *how fast should the servo press spacebar when cactus is detected
+            *Having at least 100ms here also ensures that servo has
+            *at least 100ms to move to neutral position before clicking again
             * */
-            RTC.PER = 8192;
+           RTC.PER = 250;
         }
     }
 }
