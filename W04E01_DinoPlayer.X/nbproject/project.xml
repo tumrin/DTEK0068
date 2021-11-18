@@ -3,7 +3,7 @@
     <type>com.microchip.mplab.nbide.embedded.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
-            <name>W04E01</name>
+            <name>W04E01_DinoPlayer</name>
             <creation-uuid>b58c296d-7d05-44af-8d1b-7d7058eab01a</creation-uuid>
             <make-project-type>0</make-project-type>
             <c-extensions>c</c-extensions>

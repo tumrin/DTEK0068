@@ -1,7 +1,7 @@
 /*
  * File:   main.c
  * Author: Tuomas Rinne
- * Description: W04E01 DinoPlayer. Program to move servo to click spacebar when
+ * Description: W04E01_DinoPlayer. Program to move servo to click spacebar when
  * photoresistor notices obstacle in game.
  *
  * Created on 16 November 2021, 13:16
@@ -94,6 +94,51 @@ void rtc_init(void)
     RTC.CTRLA = RTC_RTCEN_bm; //Enable RTC
 }
 
+/**
+ * Function for reading photoresistor values
+ * 
+ * @return 
+ */
+uint16_t read_ldr(void)
+{
+    //Read LDR value
+    ADC0.CTRLC &= ~(ADC_REFSEL_VDDREF_gc); //Clear REFSEL bits
+    //Voltage reference to internal 2.5V
+    ADC0.CTRLC |= ADC_REFSEL_INTREF_gc;
+    //MUXPOS to AN8 (PE0) for LDR
+    ADC0.MUXPOS  = ADC_MUXPOS_AIN8_gc;
+    // Start conversion (bit cleared when conversion is done) 
+    ADC0.COMMAND = ADC_STCONV_bm;   
+    //Wait for hardware to set RESRDY bit
+    while (!(ADC0.INTFLAGS & ADC_RESRDY_bm));
+
+    //Take 1/100 of result to be easily comparable with threshold
+    //and clear RSRDY by reading ADC0.RES
+    return ADC0.RES/100;
+}
+
+/**
+ * Function for reading potentiometer values
+ * 
+ * @return 
+ */
+uint16_t read_pot(void)
+{
+    //Read potentiometer value
+    ADC0.CTRLC |= ADC_REFSEL_VDDREF_gc; //Voltage reference to Vdd
+
+    //MUXPOS to AN14 (PF4) for potentiometer
+    ADC0.MUXPOS  = ADC_MUXPOS_AIN14_gc;
+
+    ADC0.COMMAND = ADC_STCONV_bm; //Start conversion
+
+    //Wait for hardware to set RESRDY bit
+    while (!(ADC0.INTFLAGS & ADC_RESRDY_bm));
+
+    //Take 1/100 of ADC0 result to fit into 7 segment and clear RSRDY bit
+    return ADC0.RES/100;
+}
+
 int main(void) 
 { 
     uint8_t nums[] = {
@@ -142,37 +187,10 @@ int main(void)
     
     while (1)
     {
-        //Read LDR value
-        ADC0.CTRLC &= ~(ADC_REFSEL_VDDREF_gc); //Clear REFSEL bits
-        //Voltage reference to internal 2.5V
-        ADC0.CTRLC |= ADC_REFSEL_INTREF_gc;
-        //MUXPOS to AN8 (PE0) for LDR
-        ADC0.MUXPOS  = ADC_MUXPOS_AIN8_gc;
-        // Start conversion (bit cleared when conversion is done) 
-        ADC0.COMMAND = ADC_STCONV_bm;   
-        //Wait for hardware to set RESRDY bit
-        while (!(ADC0.INTFLAGS & ADC_RESRDY_bm));
-        
-        //Take 1/100 of result to be easily comparable with threshold
-        //and clear RSRDY by reading ADC0.RES
-        uint16_t res = ADC0.RES/100;
-        
-        //Read potentiometer value
-        ADC0.CTRLC |= ADC_REFSEL_VDDREF_gc; //Voltage reference to Vdd
-        
-        //MUXPOS to AN14 (PF4) for potentiometer
-        ADC0.MUXPOS  = ADC_MUXPOS_AIN14_gc;
-        
-        ADC0.COMMAND = ADC_STCONV_bm; //Start conversion
-        
-        //Wait for hardware to set RESRDY bit
-        while (!(ADC0.INTFLAGS & ADC_RESRDY_bm));
-        
-        //Take 1/100 of ADC0 result to fit into 7 segment and clear RSRDY bit
-        uint16_t treshold = ADC0.RES/100;
-        
+        uint16_t ldr_res = read_ldr();
+        uint16_t treshold = read_pot();
         VPORTC.OUT = nums[treshold]; //Display current threshold
-        if(res >= treshold && !g_return)
+        if(ldr_res >= treshold && !g_return)
         {
             g_click = 1;
                 
