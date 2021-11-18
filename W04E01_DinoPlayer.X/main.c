@@ -30,11 +30,11 @@
 #define NINE PIN6_bm | PIN5_bm | PIN2_bm | PIN1_bm | PIN0_bm
 #define A_LETTER PIN6_bm | PIN5_bm | PIN4_bm | PIN2_bm | PIN1_bm | PIN0_bm
 
-// Global variable to keep track when servo should click spacebar
+//Global variable to keep track when servo should click spacebar
 volatile uint8_t g_click = 0;
 
 //Global variable to keep track of returning to neutral position so it doesn't
-// get interrupted by new clicking movement
+//get interrupted by new clicking movement
 volatile uint8_t g_return = 0;
 
 ISR(RTC_CNT_vect)
@@ -46,10 +46,15 @@ ISR(RTC_CNT_vect)
         TCA0.SINGLE.CMP2BUF = SERVO_PWM_DUTY_MAX; 
         g_click = 0;
         g_return = 1;
-        while (RTC.STATUS > 0); // Wait for PERBUSY flag
-        //Set period to 4096 cycles (125ms)
+        while (RTC.STATUS > 0) //Wait for PERBUSY flag
+        {
+            ;
+        }
+        
+        //Set period to 4096 cycles (125ms) because we want to return servo to
+        //neutral position after pressing spacebar but also want to give
+        //movement at least 100ms to complete
         RTC.PER = 4096;
-        //RTC.INTCTRL |= RTC_OVF_bm;/* Enable: enabled */
     }
     else
     {
@@ -69,7 +74,10 @@ void rtc_init(void)
     ccp_write_io((void*) &CLKCTRL.XOSC32KCTRLA, temp);
     
     // Wait for the clock to be released (0 = unstable, unused) 
-    while (CLKCTRL.MCLKSTATUS & CLKCTRL_XOSC32KS_bm);
+    while (CLKCTRL.MCLKSTATUS & CLKCTRL_XOSC32KS_bm)
+    {
+        ;
+    }
     
     // Select external crystal (SEL = 0) 
     temp = CLKCTRL.XOSC32KCTRLA;
@@ -82,7 +90,10 @@ void rtc_init(void)
     ccp_write_io((void*) &CLKCTRL.XOSC32KCTRLA, temp);
     
     // Wait for the clock to stabilize 
-    while (RTC.STATUS > 0);
+    while (RTC.STATUS > 0)
+    {
+        ;
+    }
     
      //Set period to  Enable OVF interrupt8192 cycles (1/4 second)
     RTC.PER = 8192;
@@ -97,9 +108,9 @@ void rtc_init(void)
 /**
  * Function for reading photoresistor values
  * 
- * @return 
+ * @return 1/100 of LDR value as 8 bit unsigned integer
  */
-uint16_t read_ldr(void)
+uint8_t read_ldr(void)
 {
     //Read LDR value
     ADC0.CTRLC &= ~(ADC_REFSEL_VDDREF_gc); //Clear REFSEL bits
@@ -110,7 +121,10 @@ uint16_t read_ldr(void)
     // Start conversion (bit cleared when conversion is done) 
     ADC0.COMMAND = ADC_STCONV_bm;   
     //Wait for hardware to set RESRDY bit
-    while (!(ADC0.INTFLAGS & ADC_RESRDY_bm));
+    while (!(ADC0.INTFLAGS & ADC_RESRDY_bm))
+    {
+        ;
+    }
 
     //Take 1/100 of result to be easily comparable with threshold
     //and clear RSRDY by reading ADC0.RES
@@ -120,9 +134,9 @@ uint16_t read_ldr(void)
 /**
  * Function for reading potentiometer values
  * 
- * @return 
+ * @return 1/100 of potentiometer value as 8 bit unsigned integer
  */
-uint16_t read_pot(void)
+uint8_t read_pot(void)
 {
     //Read potentiometer value
     ADC0.CTRLC |= ADC_REFSEL_VDDREF_gc; //Voltage reference to Vdd
@@ -133,7 +147,10 @@ uint16_t read_pot(void)
     ADC0.COMMAND = ADC_STCONV_bm; //Start conversion
 
     //Wait for hardware to set RESRDY bit
-    while (!(ADC0.INTFLAGS & ADC_RESRDY_bm));
+    while (!(ADC0.INTFLAGS & ADC_RESRDY_bm))
+    {
+        ;
+    }
 
     //Take 1/100 of ADC0 result to fit into 7 segment and clear RSRDY bit
     return ADC0.RES/100;
@@ -177,7 +194,7 @@ int main(void)
     //Potentiometer
     // Set PF4 as input for potentiometer
     PORTF.DIRCLR = PIN4_bm; 
-    PORTF.PIN4CTRL = PORT_ISC_INPUT_DISABLE_gc; 
+    PORTF.PIN4CTRL = PORT_ISC_INPUT_DISABLE_gc; // Disable input buffer
     
     VREF.CTRLA |= VREF_ADC0REFSEL_2V5_gc; // Set internal voltage ref to 2.5V
     
@@ -187,16 +204,25 @@ int main(void)
     
     while (1)
     {
-        uint16_t ldr_res = read_ldr();
-        uint16_t treshold = read_pot();
+        //Read ldr and potentiometer values to variables
+        uint8_t ldr_res = read_ldr();
+        uint8_t treshold = read_pot();
         VPORTC.OUT = nums[treshold]; //Display current threshold
         if(ldr_res >= treshold && !g_return)
         {
             g_click = 1;
                 
-            while (RTC.STATUS > 0); // Wait for PERBUSY flag
+            while (RTC.STATUS > 0) // Wait for PERBUSY flag
+            {
+                ;
+            }
             
-            //Set period to 8192 cycles (1/4 second)
+            /**Set period to 8192 cycles (250ms)
+            *This depends on how far the LDR is from dino meaning
+            *how fast sould the servo press spacebar when cactus is detected
+            *Havin atleast 100ms "delay" here also ensures that servo has
+            *atleast 100ms to move to neutral position before clicking again
+            * */
             RTC.PER = 8192;
         }
     }
