@@ -181,12 +181,12 @@ int main(void)
     // Enable TCA0 peripheral 
     TCA0.SINGLE.CTRLA |= TCA_SINGLE_ENABLE_bm;
     
-    //Servo
+    //Photoresistor
     // Set PE0 as input 
     PORTE.DIRCLR = PIN0_bm; 
     // No pull-up, no invert, disable input buffer 
     PORTE.PIN0CTRL = PORT_ISC_INPUT_DISABLE_gc; 
-    // Use 2.5v  as reference voltage and set prescaler of 16 
+    // Set prescaler of 16 
     ADC0.CTRLC |= ADC_PRESC_DIV16_gc; 
     // Enable (power up) ADC (10-bit resolution is default) 
     ADC0.CTRLA |= ADC_ENABLE_bm;
