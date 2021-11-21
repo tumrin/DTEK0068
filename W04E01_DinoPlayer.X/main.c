@@ -164,6 +164,7 @@ int main(void)
     //Set PORTC pins to output for display
     PORTC.DIRSET = 0xFF;
     
+    //Servo
     // Route TCA0 PWM waveform to PORTB 
     PORTMUX.TCAROUTEA |= PORTMUX_TCA0_PORTB_gc; 
     // Set 0-WO2 (PB2) as digital output 
