@@ -218,6 +218,7 @@ int main(void)
         /** Click if photoresistor value is greater or equal to treshold
          *  and servo is not currently returning to neutral position
          *  and servo is not already clicking
+         *  This keep tapping as long as ldr value is lower than threshold
          */
         if(ldr_res >= treshold && !g_return && !g_click)
         {
