@@ -214,6 +214,11 @@ int main(void)
         ldr_res = read_ldr();
         treshold = read_pot();
         VPORTC.OUT = nums[treshold]; //Display current threshold
+        
+        /** Click if photoresistor value is greater or equal to treshold
+         *  and servo is not currently returning to neutral position
+         *  and servo is not already clicking
+         */
         if(ldr_res >= treshold && !g_return && !g_click)
         {
             g_click = 1;
