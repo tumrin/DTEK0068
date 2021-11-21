@@ -2,7 +2,7 @@
  * File:   main.c
  * Author: Tuomas Rinne
  * Description: W04E01_DinoPlayer. Program to move servo to click spacebar when
- * photoresistor notices obstacle in game.
+ * photoresistor notices obstacle in game chromium dino game.
  *
  * Created on 16 November 2021, 13:16
  */
@@ -201,13 +201,17 @@ int main(void)
     
     rtc_init(); //Initialize RCT
     
+    //Variables for storing 1/100 of ldr and potentiometer results
+    uint8_t ldr_res = 0;
+    uint8_t treshold = 0;
+    
     sei(); //Enable interrupts
     
     while (1)
     {
         //Read ldr and potentiometer values to variables
-        uint8_t ldr_res = read_ldr();
-        uint8_t treshold = read_pot();
+        ldr_res = read_ldr();
+        treshold = read_pot();
         VPORTC.OUT = nums[treshold]; //Display current threshold
         if(ldr_res >= treshold && !g_return && !g_click)
         {
