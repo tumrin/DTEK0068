@@ -11,6 +11,7 @@
 #include <avr/cpufunc.h>
 #include <avr/interrupt.h>
 
+//From course materials
 #define SERVO_PWM_PERIOD        (0x1046) 
 #define SERVO_PWM_DUTY_NEUTRAL  (0x0138)
 #define SERVO_PWM_DUTY_MAX      (0x01A0)
