@@ -14,6 +14,9 @@
 #define USART0_BAUD_RATE(BAUD_RATE) ((float)(F_CPU * 64 / (16 * \
 (float)BAUD_RATE)) + 0.5)
 
+static QueueHandle_t input_queue;
+static QueueHandle_t output_queue;
+
 // PCn mapping for 7-segment element pin connections
 const uint8_t digit[] =
 {
@@ -32,13 +35,16 @@ const uint8_t digit[] =
   
 void read_usart(void* param)
 {
+    uint16_t number = 0;
     for(;;)
     {
         vTaskDelay(50);
         while (!(USART0.STATUS & USART_RXCIF_bm))
         {
             ;
-        }        
+        } 
+        number = USART0.RXDATAL;
+        xQueueSend(input_queue, (void *)&number, 500);
     }
     vTaskDelete(NULL);
 }
@@ -51,7 +57,7 @@ void write_usart(void* param)
         {
             ;
         }        
-        USART0.TXDATAL = 'c';
+        //USART0.TXDATAL = 'c';
     }
     vTaskDelete(NULL);
 }
@@ -65,7 +71,23 @@ void control_display(void* param)
     // Set entire PORTC (7-segment LED display) as output
     PORTC.DIRSET = 0xFF;
     
-    VPORTC.OUT = 0xFF;
+    uint16_t input_buffer;
+    
+    for(;;)
+    {
+        vTaskDelay(50);
+        if(xQueueReceive(input_queue, &input_buffer, 0) == pdTRUE)
+        {
+            if(input_buffer < 58 && input_buffer>= 48)
+            {
+                VPORTC.OUT = digit[input_buffer-48]; 
+            }
+            else
+            {
+                VPORTC.OUT = digit[10];
+            }
+        }       
+    }
     
     vTaskDelete(NULL);
 }
@@ -79,6 +101,9 @@ int main(void)
         //Set PA0 to output
     PORTA.DIRSET = PIN0_bm;
     PORTA.DIRCLR = PIN1_bm;
+    
+    input_queue = xQueueCreate(1, sizeof(uint16_t));
+    output_queue = xQueueCreate(1, sizeof(uint16_t));
     // Create task 
     xTaskCreate( 
         control_display, 
