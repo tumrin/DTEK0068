@@ -9,6 +9,10 @@
 #include "FreeRTOS.h" 
 #include "clock_config.h" 
 #include "task.h" 
+#include "queue.h"
+#define F_CPU 3333333
+#define USART0_BAUD_RATE(BAUD_RATE) ((float)(F_CPU * 64 / (16 * \
+(float)BAUD_RATE)) + 0.5)
 
 // PCn mapping for 7-segment element pin connections
 const uint8_t digit[] =
@@ -28,12 +32,28 @@ const uint8_t digit[] =
   
 void read_usart(void* param)
 {
-    
+    for(;;)
+    {
+        vTaskDelay(50);
+        while (!(USART0.STATUS & USART_RXCIF_bm))
+        {
+            ;
+        }        
+    }
+    vTaskDelete(NULL);
 }
 void write_usart(void* param)
 {
-    //Set PA0 to output
-    PORTA.DIRSET = PIN0_bm;
+    for(;;)
+    {
+        vTaskDelay(50);
+        while (!(USART0.STATUS & USART_DREIF_bm))
+        {
+            ;
+        }        
+        USART0.TXDATAL = 'c';
+    }
+    vTaskDelete(NULL);
 }
 void control_display(void* param)
 {
@@ -53,10 +73,32 @@ void control_display(void* param)
   
 int main(void) 
 { 
+    USART0.BAUD = (uint16_t)USART0_BAUD_RATE(9600);
+    USART0.CTRLB |= USART_TXEN_bm;
+    USART0.CTRLB |= USART_RXEN_bm;
+        //Set PA0 to output
+    PORTA.DIRSET = PIN0_bm;
+    PORTA.DIRCLR = PIN1_bm;
     // Create task 
     xTaskCreate( 
         control_display, 
         "display", 
+        configMINIMAL_STACK_SIZE, 
+        NULL, 
+        tskIDLE_PRIORITY, 
+        NULL 
+    ); 
+    xTaskCreate( 
+        read_usart, 
+        "read", 
+        configMINIMAL_STACK_SIZE, 
+        NULL, 
+        tskIDLE_PRIORITY, 
+        NULL 
+    ); 
+    xTaskCreate( 
+        write_usart, 
+        "write", 
         configMINIMAL_STACK_SIZE, 
         NULL, 
         tskIDLE_PRIORITY, 
