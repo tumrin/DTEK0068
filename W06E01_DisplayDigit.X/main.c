@@ -1,7 +1,9 @@
 /*
  * File:   main.c
  * Author: Tuomas Rinne
- *
+ * Description: Exercise W06E01 - Digit Display. Program to show number from 0-9
+ * on display when read from USART. Displays E and sends error message via USART
+ * if character is not a number between 0 and 9.
  * Created on 30 November 2021, 12:31
  * Target device: ATmega4809 Curiosity Nano
  */
@@ -10,11 +12,13 @@
 #include "clock_config.h" 
 #include "task.h" 
 #include "queue.h"
+#include <string.h>
 
-#define F_CPU 3333333
-#define USART0_BAUD_RATE(BAUD_RATE) ((float)(F_CPU * 64 / (16 * \
+// Macro to set baud rate
+#define USART0_BAUD_RATE(BAUD_RATE) ((float)(configCPU_CLOCK_HZ * 64 / (16 * \
 (float)BAUD_RATE)) + 0.5)
 
+// Queues
 static QueueHandle_t input_queue;
 static QueueHandle_t output_queue;
 
@@ -31,37 +35,69 @@ const uint8_t digit[] =
     0b00000111,
     0b01111111,
     0b01101111,      // 9
-    0b01110111       // A
+    0b01111001       // E
 };
+
+void USART0_sendString(char *str)
+{
+    for(size_t i = 0; i < strlen(str); i++)
+    {
+        while (!(USART0.STATUS & USART_DREIF_bm))
+        {
+            ;
+        }        
+        USART0.TXDATAL = str[i];
+    }
+}
   
 void read_usart(void* param)
 {
-    uint16_t number = 0;
+    PORTA.DIRCLR = PIN1_bm; // Set PA1 to input
+    uint8_t number = 0; // Variable for storing number from user input
+    
     for(;;)
     {
-        vTaskDelay(50);
         while (!(USART0.STATUS & USART_RXCIF_bm))
         {
             ;
         } 
         number = USART0.RXDATAL;
-        xQueueSend(input_queue, (void *)&number, 500);
+        
+        // Check if number is between 0 and 9. '0' = 48 and '9' = 57
+        if((number >= 48) || (number <= 57))
+        {
+            number -= 48;
+        }
+        xQueueSend(input_queue, (void *)&number, 0);
+        xQueueSend(output_queue, (void *)&number, 0);
     }
     vTaskDelete(NULL);
 }
+
 void write_usart(void* param)
 {
-    char output_buffer;
+    PORTA.DIRSET = PIN0_bm; // Set PA0 to output
+
+    uint8_t output_buffer; // Store value from output queue
+
     for(;;)
     {
-        vTaskDelay(50);
         while (!(USART0.STATUS & USART_DREIF_bm))
         {
             ;
         }      
+        
+        // Send error if number in queue is more than 9
         if(xQueueReceive(output_queue, &output_buffer, 0) == pdTRUE)
         {
-            USART0.TXDATAL = output_buffer;
+            if(output_buffer > 9)
+            {
+                USART0_sendString("Error! Not a valid digit.\r\n");
+            }
+            else
+            {
+                USART0_sendString("Correct! This is a digit.\r\n");
+            }
         }
     }
     vTaskDelete(NULL);
@@ -76,23 +112,19 @@ void control_display(void* param)
     // Set entire PORTC (7-segment LED display) as output
     PORTC.DIRSET = 0xFF;
     
-    uint16_t input_buffer;
-    
-    char error_char = 'e';
+    uint8_t input_buffer;
     
     for(;;)
     {
-        vTaskDelay(50);
         if(xQueueReceive(input_queue, &input_buffer, 0) == pdTRUE)
         {
-            if(input_buffer < 58 && input_buffer>= 48)
+            if(input_buffer <= 9 && input_buffer>= 0)
             {
-                VPORTC.OUT = digit[input_buffer-48]; 
+                VPORTC.OUT = digit[input_buffer];
             }
             else
             {
                 VPORTC.OUT = digit[10];
-                xQueueSend(output_queue, (void *)&error_char, 500);
             }
         }       
     }
@@ -102,17 +134,17 @@ void control_display(void* param)
   
   
 int main(void) 
-{ 
+{
+    //Initialize USART0
     USART0.BAUD = (uint16_t)USART0_BAUD_RATE(9600);
     USART0.CTRLB |= USART_TXEN_bm;
     USART0.CTRLB |= USART_RXEN_bm;
-        //Set PA0 to output
-    PORTA.DIRSET = PIN0_bm;
-    PORTA.DIRCLR = PIN1_bm;
     
-    input_queue = xQueueCreate(1, sizeof(uint16_t));
-    output_queue = xQueueCreate(1, sizeof(char));
-    // Create task 
+    //Initialize queues
+    input_queue = xQueueCreate(1, sizeof(uint8_t));
+    output_queue = xQueueCreate(1, sizeof(uint8_t));
+    
+    // Create tasks
     xTaskCreate( 
         control_display, 
         "display", 
