@@ -10,6 +10,7 @@
 #include "clock_config.h" 
 #include "task.h" 
 #include "queue.h"
+
 #define F_CPU 3333333
 #define USART0_BAUD_RATE(BAUD_RATE) ((float)(F_CPU * 64 / (16 * \
 (float)BAUD_RATE)) + 0.5)
@@ -50,14 +51,18 @@ void read_usart(void* param)
 }
 void write_usart(void* param)
 {
+    char output_buffer;
     for(;;)
     {
         vTaskDelay(50);
         while (!(USART0.STATUS & USART_DREIF_bm))
         {
             ;
-        }        
-        //USART0.TXDATAL = 'c';
+        }      
+        if(xQueueReceive(output_queue, &output_buffer, 0) == pdTRUE)
+        {
+            USART0.TXDATAL = output_buffer;
+        }
     }
     vTaskDelete(NULL);
 }
@@ -73,6 +78,8 @@ void control_display(void* param)
     
     uint16_t input_buffer;
     
+    char error_char = 'e';
+    
     for(;;)
     {
         vTaskDelay(50);
@@ -85,6 +92,7 @@ void control_display(void* param)
             else
             {
                 VPORTC.OUT = digit[10];
+                xQueueSend(output_queue, (void *)&error_char, 500);
             }
         }       
     }
@@ -103,7 +111,7 @@ int main(void)
     PORTA.DIRCLR = PIN1_bm;
     
     input_queue = xQueueCreate(1, sizeof(uint16_t));
-    output_queue = xQueueCreate(1, sizeof(uint16_t));
+    output_queue = xQueueCreate(1, sizeof(char));
     // Create task 
     xTaskCreate( 
         control_display, 
