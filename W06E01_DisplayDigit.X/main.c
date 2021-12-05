@@ -38,6 +38,10 @@ const uint8_t digit[] =
     0b01111001       // E
 };
 
+/** Function to send string via USART0
+ * 
+ * @param str Pointer to string
+ */
 void USART0_sendString(char *str)
 {
     for(size_t i = 0; i < strlen(str); i++)
@@ -49,7 +53,7 @@ void USART0_sendString(char *str)
         USART0.TXDATAL = str[i];
     }
 }
-  
+
 void read_usart(void* param)
 {
     PORTA.DIRCLR = PIN1_bm; // Set PA1 to input
@@ -61,13 +65,15 @@ void read_usart(void* param)
         {
             ;
         } 
-        number = USART0.RXDATAL;
+        number = USART0.RXDATAL; // Read number from USART0
         
-        // Check if number is between 0 and 9. '0' = 48 and '9' = 57
+        // Check if number is between 0 and 9. '0' = 48 and '9' = 57 in ASCII
         if((number >= 48) || (number <= 57))
         {
-            number -= 48;
+            number -= 48; // Convert ASCII number to integer
         }
+        
+        // Send received number to both queues
         xQueueSend(input_queue, (void *)&number, 0);
         xQueueSend(output_queue, (void *)&number, 0);
     }
@@ -102,6 +108,7 @@ void write_usart(void* param)
     }
     vTaskDelete(NULL);
 }
+
 void control_display(void* param)
 {
     // On-board drives the transistor that grounds the 7-segment display
@@ -112,13 +119,13 @@ void control_display(void* param)
     // Set entire PORTC (7-segment LED display) as output
     PORTC.DIRSET = 0xFF;
     
-    uint8_t input_buffer;
+    uint8_t input_buffer; // Buffer for receiving number from read task
     
     for(;;)
     {
         if(xQueueReceive(input_queue, &input_buffer, 0) == pdTRUE)
         {
-            if(input_buffer <= 9 && input_buffer>= 0)
+            if((input_buffer <= 9) && (input_buffer >= 0))
             {
                 VPORTC.OUT = digit[input_buffer];
             }
