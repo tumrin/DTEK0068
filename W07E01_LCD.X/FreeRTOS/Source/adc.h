@@ -9,7 +9,6 @@
 #define	ADC_H
 #include <avr/io.h> 
 
-uint16_t read_adc(void);
 void adc_init(void);
 typedef struct {
     uint16_t ldr;
@@ -17,7 +16,11 @@ typedef struct {
     uint16_t pot;
 }ADC_result;
 
+ADC_result read_adc(void);
 
+uint16_t read_ldr(void);
+uint16_t read_ntc(void);
+uint16_t read_pot(void);
 
 #endif	/* ADC_H */
 
