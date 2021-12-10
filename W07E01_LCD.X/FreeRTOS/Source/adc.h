@@ -11,6 +11,11 @@
 
 uint16_t read_adc(void);
 void adc_init(void);
+typedef struct {
+    uint16_t ldr;
+    uint16_t ntc;
+    uint16_t pot;
+}ADC_result;
 
 
 

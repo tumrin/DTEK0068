@@ -14,6 +14,7 @@
       <itemPath>FreeRTOS/Source/usart.h</itemPath>
       <itemPath>FreeRTOS/Source/dummy.h</itemPath>
       <itemPath>FreeRTOS/Source/lcd.h</itemPath>
+      <itemPath>FreeRTOS/Source/display.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -35,6 +36,7 @@
       <itemPath>FreeRTOS/Source/usart.c</itemPath>
       <itemPath>FreeRTOS/Source/dummy.c</itemPath>
       <itemPath>FreeRTOS/Source/lcd.c</itemPath>
+      <itemPath>FreeRTOS/Source/display.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

@@ -18,7 +18,6 @@
 extern "C" {
 #endif
 
-
 /*
  * lcd_init()
  *

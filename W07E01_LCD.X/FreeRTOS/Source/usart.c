@@ -36,14 +36,11 @@ void write_usart(void* param)
     PORTA.DIRSET = PIN0_bm; // Set PA0 to output
 
     uint8_t output_buffer; // Store value from output queue
+    
+    vTaskDelay(200);
 
     for(;;)
-    {
-        while (!(USART0.STATUS & USART_DREIF_bm))
-        {
-            ;
-        }      
-        
+    {        
         // Send error if number in queue is more than 9
         if(xQueueReceive(param, &output_buffer, 0) == pdTRUE)
         {
