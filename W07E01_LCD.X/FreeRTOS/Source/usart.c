@@ -22,6 +22,15 @@ void USART0_sendString(char *str)
     }
 }
 
+void init_usart()
+{
+        //Initialize USART0
+    USART0.BAUD = (uint16_t)USART0_BAUD_RATE(9600);
+    USART0.CTRLB |= USART_TXEN_bm;
+    USART0.CTRLB |= USART_RXEN_bm;
+    
+}
+
 void write_usart(void* param)
 {
     PORTA.DIRSET = PIN0_bm; // Set PA0 to output

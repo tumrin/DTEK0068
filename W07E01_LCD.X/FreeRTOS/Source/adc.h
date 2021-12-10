@@ -7,6 +7,10 @@
 
 #ifndef ADC_H
 #define	ADC_H
+#include <avr/io.h> 
+
+uint16_t read_adc(void);
+void adc_init(void);
 
 
 

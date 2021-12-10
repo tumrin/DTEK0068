@@ -8,16 +8,7 @@
 #ifndef DUMMY_H
 #define	DUMMY_H
 
-#ifdef	__cplusplus
-extern "C" {
-#endif
-
-
-
-
-#ifdef	__cplusplus
-}
-#endif
+void dummy_task(void *param);
 
 #endif	/* DUMMY_H */
 

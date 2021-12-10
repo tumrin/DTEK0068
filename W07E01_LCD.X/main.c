@@ -1,7 +1,7 @@
 /*
  * File:   main.c
  * Author: Tuomas Rinne
- * Description: Exercise W06E01 - Digit Display. Program to show number from 0-9
+ * Description: Exercise W07E01 - LCD. Program to show number from 0-9
  * on display when read from USART. Displays E and sends error message via USART
  * if character is not a number between 0 and 9.
  * Created on 7 December 2021, 14:37
@@ -14,7 +14,8 @@
 #include "queue.h"
 #include <string.h>
 #include "../adc.h"
-#include "./../usart.h"
+#include "../usart.h"
+#include "../lcd.h"
 
 // Macro to set baud rate
 #define USART0_BAUD_RATE(BAUD_RATE) ((float)(configCPU_CLOCK_HZ * 64 / (16 * \
@@ -23,8 +24,15 @@
 static QueueHandle_t output_queue;
   
   
-int main(void) 
+int main(void) // Macro to set baud rate
+#define USART0_BAUD_RATE(BAUD_RATE) ((float)(configCPU_CLOCK_HZ * 64 / (16 * \
+(float)BAUD_RATE)) + 0.5)
+
 {
+    // Initialization
+    init_usart();
+    lcd_init();
+    
     output_queue = xQueueCreate(20, sizeof(uint8_t));
     
     xTaskCreate( 
