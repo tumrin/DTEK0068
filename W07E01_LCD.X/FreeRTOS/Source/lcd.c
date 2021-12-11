@@ -53,6 +53,7 @@
 #include <stdio.h>
 #include "timers.h"
 #include "lcd.h"
+#include "string.h"
 
 
 /*
@@ -92,6 +93,8 @@
     LCD_ENABLE_PULSE();         \
     LCD_CMD_DELAY();            \
 }
+
+const char man_text[] = "DTEK0068 Embedded Microprocessor Systems";
 
 /******************************************************************************
  * Public functions
@@ -233,11 +236,31 @@ void display_timer_callback()
         display_mode++;
     }
 }
+void scroll_timer_callback()
+{
+    if(leftmost_char == strlen(man_text)-16)
+    {
+        direction = 1;
+    }
+    else if(leftmost_char == 0)
+    {
+        direction = 0;
+    }
+    if(direction == 0)
+    {
+        leftmost_char++;
+    }
+    else{
+        leftmost_char--;
+    }
+}
 
 // Task
 void lcd_task(void *param)
 {
     lcd_init();
+    direction = 0;
+    leftmost_char = 0;
     TimerHandle_t display_time = xTimerCreate
           ( /* Just a text name, not used by the RTOS
             kernel. */
@@ -255,7 +278,26 @@ void lcd_task(void *param)
             /* Each timer calls the same callback when
             it expires. */
             display_timer_callback);
-    xTimerStart(display_time, 0);
+    
+        TimerHandle_t scroll_time = xTimerCreate
+          ( /* Just a text name, not used by the RTOS
+            kernel. */
+            "Scroll",
+            /* The timer period in ticks, must be
+            greater than 0. */
+            200,
+            /* The timers will auto-reload themselves
+            when they expire. */
+            pdTRUE,
+            /* The ID is used to store a count of the
+            number of times the timer has expired, which
+            is initialised to 0. */
+            ( void * ) 1,
+            /* Each timer calls the same callback when
+            it expires. */
+            scroll_timer_callback);
+    xTimerStart(scroll_time, 10);
+    xTimerStart(display_time, 10);
     
     char adc_val[10];
     
@@ -286,7 +328,9 @@ void lcd_task(void *param)
                     break;
             }
         }
-
+        lcd_cursor_set(1, 0);
+        strncpy(display_man_text, man_text+leftmost_char, 16);
+        lcd_write(display_man_text);
     }
     vTaskDelete(NULL);
 }

@@ -51,6 +51,9 @@ void lcd_clear(void);
 void lcd_task(void *param);
 
 uint8_t display_mode;
+uint8_t leftmost_char;
+char display_man_text[16];
+uint8_t direction;
 
 
 #ifdef	__cplusplus
