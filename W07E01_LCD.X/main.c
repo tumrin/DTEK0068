@@ -41,6 +41,13 @@ int main(void) // Macro to set baud rate
     mutex_handle = xSemaphoreCreateMutex();
     lcd_queue = xQueueCreate(1, sizeof(ADC_result_t));
     // Initialization
+    VREF.CTRLA |= VREF_ADC0REFSEL_2V5_gc; // Set internal voltage ref to 2.5V
+        //Read LDR value
+    ADC0.CTRLC &= ~(ADC_REFSEL_VDDREF_gc); //Clear REFSEL bits
+    //Voltage reference to internal 2.5V
+    ADC0.CTRLC |= ADC_REFSEL_INTREF_gc;
+        // Set prescaler of 16 
+    ADC0.CTRLC |= ADC_PRESC_DIV16_gc; 
     ADC0.CTRLA |= ADC_ENABLE_bm;
     init_usart();
     TCB3_init();
