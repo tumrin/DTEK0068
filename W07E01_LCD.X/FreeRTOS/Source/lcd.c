@@ -1,4 +1,3 @@
-
 /*
  * File:    lcd.c
  *          Minimal 1602 LCD driver (8-bit bus), FreeRTOS version
@@ -48,7 +47,6 @@
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "lcd.h"
 
 
 /*

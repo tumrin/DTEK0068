@@ -6,21 +6,23 @@
 #include <stdio.h>
 #include "adc.h"
 #include "display.h"
+#include "usart.h"
 
 void display_task(void *param)
 {
-    ADC_result adc_results = read_adc();
-    
+    ADC_result_t adc_results;
     
     vTaskDelay(200);
     
     for(;;)
     {
+        adc_results = read_adc();
+        lcd_clear();
         display_ldr(adc_results.ldr);
-        display_ldr(adc_results.ldr);
-        display_ldr(adc_results.ldr);
+        display_pot(adc_results.pot);
+        display_ntc(adc_results.ntc);
     }
-    
+    vTaskDelete(NULL);
 }
 void display_ldr(uint16_t value)
 {
@@ -28,6 +30,7 @@ void display_ldr(uint16_t value)
     snprintf(ldr_string, 15, "LDR value: %d", value);
     lcd_cursor_set(0, 0x05);
     lcd_write(ldr_string);
+    USART0_sendString(ldr_string);
 }
 void display_pot(uint16_t value)
 {

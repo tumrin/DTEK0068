@@ -9,40 +9,77 @@
  */
 #include <avr/io.h> 
 #include "FreeRTOS.h" 
+#include "semphr.h"
 #include "clock_config.h" 
 #include "task.h" 
 #include "queue.h"
 #include <string.h>
 #include "../adc.h"
 #include "../usart.h"
+#include "../display.h"
+#include "../dummy.h"
+#include "../display.h"
+#include "../backlight.h"
 #include "../lcd.h"
-
-// Macro to set baud rate
-#define USART0_BAUD_RATE(BAUD_RATE) ((float)(configCPU_CLOCK_HZ * 64 / (16 * \
-(float)BAUD_RATE)) + 0.5)
-
-static QueueHandle_t output_queue;
   
+void TCB3_init (void)
+{
+    /* Load CCMP register with the period and duty cycle of the PWM */
+    TCB3.CCMP = 0x80FF;
+
+    /* Enable TCB3 and Divide CLK_PER by 2 */
+    TCB3.CTRLA |= TCB_ENABLE_bm;
+    TCB3.CTRLA |= TCB_CLKSEL_CLKDIV2_gc;
+    
+    /* Enable Pin Output and configure TCB in 8-bit PWM mode */
+    TCB3.CTRLB |= TCB_CCMPEN_bm;
+    TCB3.CTRLB |= TCB_CNTMODE_PWM8_gc;
+}
   
 int main(void) // Macro to set baud rate
-#define USART0_BAUD_RATE(BAUD_RATE) ((float)(configCPU_CLOCK_HZ * 64 / (16 * \
-(float)BAUD_RATE)) + 0.5)
-
 {
     // Initialization
+    ADC0.CTRLA |= ADC_ENABLE_bm;
     init_usart();
-    lcd_init();
+    TCB3_init();
+    backlight_init();
+    //lcd_init();
     
-    output_queue = xQueueCreate(20, sizeof(uint8_t));
+    //output_queue = xQueueCreate(1, sizeof(ADC_result_t));
     
     xTaskCreate( 
         write_usart, 
         "write", 
         configMINIMAL_STACK_SIZE, 
-        &output_queue, 
+        NULL, 
         tskIDLE_PRIORITY, 
         NULL 
     ); 
+    
+        xTaskCreate( 
+        backlight_task, 
+        "backlight", 
+        configMINIMAL_STACK_SIZE, 
+        NULL, 
+        tskIDLE_PRIORITY, 
+        NULL 
+    );    
+  /*      xTaskCreate( 
+        dummy_task, 
+        "dummy", 
+        configMINIMAL_STACK_SIZE, 
+        NULL, 
+        tskIDLE_PRIORITY, 
+        NULL 
+    ); 
+        xTaskCreate( 
+        display_task, 
+        "display", 
+        configMINIMAL_STACK_SIZE, 
+        NULL, 
+        tskIDLE_PRIORITY, 
+        NULL 
+    );*/
  
     // Start the scheduler 
     vTaskStartScheduler(); 

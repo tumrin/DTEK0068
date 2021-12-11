@@ -1,19 +1,27 @@
+#include <avr/io.h>
+#include "FreeRTOS.h"
+#include "semphr.h"
 #include "adc.h"
+#include "usart.h"
 
-ADC_result read_adc()
+ADC_result_t read_adc()
 {
-    ADC_result adc_result;
+    xSemaphoreTake(mutex_handle, 0);
+    ADC_result_t adc_result;
     
     adc_result.ldr = read_ldr();
     adc_result.ntc = read_ntc();
     adc_result.pot = read_pot();
     
+    
+    xSemaphoreGive(mutex_handle);
+    //xQueueSend(output_queue, &adc_result, 10);
     return adc_result;
 }
 uint16_t read_ldr()
 {
-    //MUXPOS to AN14 (PF4) for potentiometer
-    ADC0.MUXPOS  = ADC_MUXPOS_AIN14_gc;
+
+    ADC0.MUXPOS  = ADC_MUXPOS_AIN8_gc;
 
     ADC0.COMMAND = ADC_STCONV_bm; //Start conversion
 
@@ -45,7 +53,7 @@ uint16_t read_pot()
 uint16_t read_ntc()
 {
     //MUXPOS to AN14 (PF4) for potentiometer
-    ADC0.MUXPOS  = ADC_MUXPOS_AIN14_gc;
+    ADC0.MUXPOS  = ADC_MUXPOS_AIN9_gc;
 
     ADC0.COMMAND = ADC_STCONV_bm; //Start conversion
 

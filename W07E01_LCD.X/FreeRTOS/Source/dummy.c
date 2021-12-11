@@ -6,5 +6,10 @@
 void dummy_task(void *param)
 {
     vTaskDelay(200);
+    for(;;)
+    {
+        
+    }
+    vTaskDelete(NULL);
     
 }

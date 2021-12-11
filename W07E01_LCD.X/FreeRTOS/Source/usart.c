@@ -1,10 +1,12 @@
-#include "usart.h"
 #include <avr/io.h> 
 #include "FreeRTOS.h" 
 #include "clock_config.h" 
 #include "task.h" 
 #include "queue.h"
 #include <string.h>
+#include "usart.h"
+#include <stdio.h>
+#include "adc.h"
 
 /** Function to send string via USART0
  * 
@@ -25,6 +27,7 @@ void USART0_sendString(char *str)
 void init_usart()
 {
         //Initialize USART0
+    PORTA.DIRSET = PIN0_bm; // Set PA0 to output
     USART0.BAUD = (uint16_t)USART0_BAUD_RATE(9600);
     USART0.CTRLB |= USART_TXEN_bm;
     USART0.CTRLB |= USART_RXEN_bm;
@@ -33,26 +36,22 @@ void init_usart()
 
 void write_usart(void* param)
 {
-    PORTA.DIRSET = PIN0_bm; // Set PA0 to output
-
-    uint8_t output_buffer; // Store value from output queue
+    ADC_result_t output_buffer; // Store value from output queue
+    char ldr_str[15];
+    char pot_str[15];
+    char ntc_str[15];
     
     vTaskDelay(200);
 
     for(;;)
     {        
-        // Send error if number in queue is more than 9
-        if(xQueueReceive(param, &output_buffer, 0) == pdTRUE)
-        {
-            if(output_buffer > 9)
-            {
-                USART0_sendString("Error! Not a valid digit.\r\n");
-            }
-            else
-            {
-                USART0_sendString("Correct! This is a digit.\r\n");
-            }
-        }
+            output_buffer = read_adc();
+            snprintf(ldr_str, 15, "LDR: %d\r\n", output_buffer.ldr);
+            snprintf(pot_str, 15, "POT: %d\r\n", output_buffer.pot);
+            snprintf(ntc_str, 15, "NTC: %d\r\n", output_buffer.ntc);
+            USART0_sendString(ldr_str);
+            USART0_sendString(pot_str);
+            USART0_sendString(ntc_str);
     }
     vTaskDelete(NULL);
 }

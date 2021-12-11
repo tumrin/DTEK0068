@@ -7,16 +7,19 @@
 
 #ifndef ADC_H
 #define	ADC_H
-#include <avr/io.h> 
+#include "FreeRTOS.h"
+#include "semphr.h"
+
+static SemaphoreHandle_t mutex_handle;
 
 void adc_init(void);
 typedef struct {
     uint16_t ldr;
     uint16_t ntc;
     uint16_t pot;
-}ADC_result;
+}ADC_result_t;
 
-ADC_result read_adc(void);
+ADC_result_t read_adc();
 
 uint16_t read_ldr(void);
 uint16_t read_ntc(void);
