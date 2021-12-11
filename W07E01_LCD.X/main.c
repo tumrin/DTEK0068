@@ -38,7 +38,8 @@ void TCB3_init (void)
   
 int main(void) // Macro to set baud rate
 {
-        mutex_handle = xSemaphoreCreateMutex();
+    mutex_handle = xSemaphoreCreateMutex();
+    lcd_queue = xQueueCreate(1, sizeof(ADC_result_t));
     // Initialization
     ADC0.CTRLA |= ADC_ENABLE_bm;
     init_usart();

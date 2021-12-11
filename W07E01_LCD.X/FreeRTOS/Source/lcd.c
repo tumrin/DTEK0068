@@ -47,6 +47,9 @@
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "queue.h"
+#include "display.h"
+#include "adc.h"
 
 
 /*
@@ -220,10 +223,15 @@ void lcd_init(void)
 void lcd_task(void *param)
 {
     lcd_init();
-    vTaskDelay(200);
+    ADC_result_t adc_results;
+    lcd_write("a");
     for(;;)
     {
-        
+    if(xQueueReceive(lcd_queue, &adc_results, 0) == pdTRUE)
+        {
+            lcd_clear();
+            lcd_cursor_set(0, 0);
+        }
     }
     vTaskDelete(NULL);
 }

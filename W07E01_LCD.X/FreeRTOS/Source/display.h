@@ -13,9 +13,7 @@ extern "C" {
 #endif
 
 void display_task(void *param);
-void display_ldr(uint16_t value);
-void display_pot(uint16_t value);
-void display_ntc(uint16_t value);
+QueueHandle_t lcd_queue;
 
 
 #ifdef	__cplusplus

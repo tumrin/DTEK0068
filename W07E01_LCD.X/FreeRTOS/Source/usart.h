@@ -12,9 +12,6 @@
 #define USART0_BAUD_RATE(BAUD_RATE) ((float)(configCPU_CLOCK_HZ * 64 / (16 * \
 (float)BAUD_RATE)) + 0.5)
 
-static QueueHandle_t output_queue;
-
-
 // Functions
 void USART0_sendString(char *str);
 

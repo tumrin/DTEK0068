@@ -10,7 +10,7 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 
-static SemaphoreHandle_t mutex_handle;
+SemaphoreHandle_t mutex_handle;
 
 void adc_init(void);
 typedef struct {
