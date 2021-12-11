@@ -50,6 +50,7 @@
 #include "queue.h"
 #include "display.h"
 #include "adc.h"
+#include <stdio.h>
 
 
 /*
@@ -223,15 +224,21 @@ void lcd_init(void)
 void lcd_task(void *param)
 {
     lcd_init();
+    char lrd_str[9];
+    char pot_str[9];
+    char ntc_str[9];
+    
     ADC_result_t adc_results;
-    lcd_write("a");
     for(;;)
     {
-    if(xQueueReceive(lcd_queue, &adc_results, 0) == pdTRUE)
-        {
-            lcd_clear();
-            lcd_cursor_set(0, 0);
-        }
+        xQueueReceive(lcd_queue, &adc_results, 10);
+        sprintf(lrd_str, "ldr: %d", adc_results.ldr);
+        sprintf(pot_str, "pot: %d", adc_results.pot);
+        sprintf(ntc_str, "ntc: %d", adc_results.ntc);
+        lcd_clear();
+        lcd_write(lrd_str);
+        lcd_write(pot_str);
+        lcd_write(ntc_str);
     }
     vTaskDelete(NULL);
 }

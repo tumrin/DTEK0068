@@ -6,16 +6,12 @@
 
 ADC_result_t read_adc()
 {
-    xSemaphoreTake(mutex_handle, 0);
     ADC_result_t adc_result;
     
     adc_result.ldr = read_ldr();
     adc_result.ntc = read_ntc();
     adc_result.pot = read_pot();
     
-    
-    xSemaphoreGive(mutex_handle);
-    //xQueueSend(output_queue, &adc_result, 10);
     return adc_result;
 }
 uint16_t read_ldr()

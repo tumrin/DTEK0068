@@ -7,7 +7,7 @@ void backlight_task(void *param)
     vTaskDelay(200);
     for(;;)
     {
-       vTaskDelay(200); 
+     
     }
     vTaskDelete(NULL);
 }

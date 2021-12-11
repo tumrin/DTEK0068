@@ -44,14 +44,16 @@ void write_usart(void* param)
     vTaskDelay(200);
 
     for(;;)
-    {        
+    {       xSemaphoreTake(mutex_handle, 100);
             output_buffer = read_adc();
-            snprintf(ldr_str, 15, "LDR: %d\r\n", output_buffer.ldr);
-            snprintf(pot_str, 15, "POT: %d\r\n", output_buffer.pot);
-            snprintf(ntc_str, 15, "NTC: %d\r\n", output_buffer.ntc);
+            xSemaphoreGive(mutex_handle);
+            sprintf(ldr_str, "LDR: %d\r\n", output_buffer.ldr);
+            sprintf(pot_str, "POT: %d\r\n", output_buffer.pot);
+            sprintf(ntc_str, "NTC: %d\r\n", output_buffer.ntc);
             USART0_sendString(ldr_str);
             USART0_sendString(pot_str);
             USART0_sendString(ntc_str);
+            vTaskDelay(100);
     }
     vTaskDelete(NULL);
 }

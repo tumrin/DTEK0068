@@ -46,7 +46,14 @@ int main(void) // Macro to set baud rate
     TCB3_init();
     backlight_init();
     
-    //output_queue = xQueueCreate(1, sizeof(ADC_result_t));
+    xTaskCreate( 
+        display_task, 
+        "display", 
+        configMINIMAL_STACK_SIZE, 
+        NULL, 
+        tskIDLE_PRIORITY, 
+        NULL 
+    );
      xTaskCreate( 
         lcd_task, 
         "lcd", 
@@ -55,7 +62,6 @@ int main(void) // Macro to set baud rate
         tskIDLE_PRIORITY, 
         NULL 
     );    
-    
     xTaskCreate( 
         write_usart, 
         "write", 
@@ -64,7 +70,7 @@ int main(void) // Macro to set baud rate
         tskIDLE_PRIORITY, 
         NULL 
     ); 
-    
+  /*  
         xTaskCreate( 
         backlight_task, 
         "backlight", 
@@ -81,15 +87,7 @@ int main(void) // Macro to set baud rate
         tskIDLE_PRIORITY, 
         NULL 
     ); 
-        xTaskCreate( 
-        display_task, 
-        "display", 
-        configMINIMAL_STACK_SIZE, 
-        NULL, 
-        tskIDLE_PRIORITY, 
-        NULL 
-    );
- 
+ */
     // Start the scheduler 
     vTaskStartScheduler(); 
  
