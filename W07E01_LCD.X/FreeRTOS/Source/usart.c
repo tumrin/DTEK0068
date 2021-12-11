@@ -37,9 +37,7 @@ void init_usart()
 void write_usart(void* param)
 {
     ADC_result_t output_buffer; // Store value from output queue
-    char ldr_str[15];
-    char pot_str[15];
-    char ntc_str[15];
+    char ldr_str[12];
     
     vTaskDelay(200);
 
@@ -48,12 +46,7 @@ void write_usart(void* param)
             output_buffer = read_adc();
             xSemaphoreGive(mutex_handle);
             sprintf(ldr_str, "LDR: %d\r\n", output_buffer.ldr);
-            sprintf(pot_str, "POT: %d\r\n", output_buffer.pot);
-            sprintf(ntc_str, "NTC: %d\r\n", output_buffer.ntc);
             USART0_sendString(ldr_str);
-            USART0_sendString(pot_str);
-            USART0_sendString(ntc_str);
-            vTaskDelay(100);
     }
     vTaskDelete(NULL);
 }

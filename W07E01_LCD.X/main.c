@@ -62,7 +62,7 @@ int main(void) // Macro to set baud rate
         tskIDLE_PRIORITY, 
         NULL 
     );    
-   /* xTaskCreate( 
+   xTaskCreate( 
         write_usart, 
         "write", 
         configMINIMAL_STACK_SIZE, 
@@ -87,7 +87,6 @@ int main(void) // Macro to set baud rate
         tskIDLE_PRIORITY, 
         NULL 
     ); 
- */
     // Start the scheduler 
     vTaskStartScheduler(); 
  
