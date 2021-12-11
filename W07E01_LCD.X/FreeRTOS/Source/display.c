@@ -18,7 +18,7 @@ void display_task(void *param)
     {
         xSemaphoreTake(mutex_handle, 100);
         adc_results = read_adc();
-        xQueueSend(lcd_queue, &adc_results, 10);
+        xQueueOverwrite(lcd_queue, &adc_results);
         xSemaphoreGive(mutex_handle);
         vTaskDelay(100);
     }
