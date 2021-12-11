@@ -40,13 +40,20 @@ int main(void) // Macro to set baud rate
 {
         mutex_handle = xSemaphoreCreateMutex();
     // Initialization
-    //lcd_init();
     ADC0.CTRLA |= ADC_ENABLE_bm;
     init_usart();
     TCB3_init();
     backlight_init();
     
     //output_queue = xQueueCreate(1, sizeof(ADC_result_t));
+     xTaskCreate( 
+        lcd_task, 
+        "lcd", 
+        configMINIMAL_STACK_SIZE, 
+        NULL, 
+        tskIDLE_PRIORITY, 
+        NULL 
+    );    
     
     xTaskCreate( 
         write_usart, 

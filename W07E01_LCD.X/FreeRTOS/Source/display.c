@@ -30,7 +30,6 @@ void display_ldr(uint16_t value)
     snprintf(ldr_string, 15, "LDR value: %d", value);
     lcd_cursor_set(0, 0x05);
     lcd_write(ldr_string);
-    USART0_sendString(ldr_string);
 }
 void display_pot(uint16_t value)
 {

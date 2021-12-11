@@ -87,7 +87,6 @@
     LCD_CMD_DELAY();            \
 }
 
-
 /******************************************************************************
  * Public functions
  *****************************************************************************/
@@ -215,6 +214,18 @@ void lcd_init(void)
      * systems...
      */
     LCD_CMD_SEND(0b00000110);
+}
+
+// Task
+void lcd_task(void *param)
+{
+    lcd_init();
+    vTaskDelay(200);
+    for(;;)
+    {
+        
+    }
+    vTaskDelete(NULL);
 }
 
 
