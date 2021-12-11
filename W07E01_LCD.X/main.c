@@ -38,12 +38,13 @@ void TCB3_init (void)
   
 int main(void) // Macro to set baud rate
 {
+        mutex_handle = xSemaphoreCreateMutex();
     // Initialization
+    //lcd_init();
     ADC0.CTRLA |= ADC_ENABLE_bm;
     init_usart();
     TCB3_init();
     backlight_init();
-    //lcd_init();
     
     //output_queue = xQueueCreate(1, sizeof(ADC_result_t));
     
@@ -64,7 +65,7 @@ int main(void) // Macro to set baud rate
         tskIDLE_PRIORITY, 
         NULL 
     );    
-  /*      xTaskCreate( 
+       xTaskCreate( 
         dummy_task, 
         "dummy", 
         configMINIMAL_STACK_SIZE, 
@@ -79,7 +80,7 @@ int main(void) // Macro to set baud rate
         NULL, 
         tskIDLE_PRIORITY, 
         NULL 
-    );*/
+    );
  
     // Start the scheduler 
     vTaskStartScheduler(); 
