@@ -50,6 +50,7 @@ void lcd_clear(void);
 
 void lcd_task(void *param);
 
+uint8_t display_mode;
 
 
 #ifdef	__cplusplus

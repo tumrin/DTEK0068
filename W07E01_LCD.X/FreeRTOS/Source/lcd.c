@@ -51,6 +51,8 @@
 #include "display.h"
 #include "adc.h"
 #include <stdio.h>
+#include "timers.h"
+#include "lcd.h"
 
 
 /*
@@ -220,31 +222,75 @@ void lcd_init(void)
     LCD_CMD_SEND(0b00000110);
 }
 
+void display_timer_callback()
+{
+    if(display_mode == 2)
+    {
+        display_mode = 0;
+    }
+    else
+    {
+        display_mode++;
+    }
+}
+
 // Task
 void lcd_task(void *param)
 {
     lcd_init();
-    char lrd_str[10];
-    char pot_str[10];
-   // char ntc_str[10];
+    TimerHandle_t display_time = xTimerCreate
+          ( /* Just a text name, not used by the RTOS
+            kernel. */
+            "Timer",
+            /* The timer period in ticks, must be
+            greater than 0. */
+            666,
+            /* The timers will auto-reload themselves
+            when they expire. */
+            pdTRUE,
+            /* The ID is used to store a count of the
+            number of times the timer has expired, which
+            is initialised to 0. */
+            ( void * ) 0,
+            /* Each timer calls the same callback when
+            it expires. */
+            display_timer_callback);
+    xTimerStart(display_time, 0);
+    
+    char adc_val[10];
+    
     
     ADC_result_t adc_results;
     for(;;)
     {
         if(xQueueReceive(lcd_queue, &adc_results, 100) == pdTRUE)
         {
-            sprintf(lrd_str, "ldr: %d", adc_results.ldr);
-            sprintf(pot_str, "pot: %d", adc_results.pot);
-            //sprintf(ntc_str, "ntc: %d", adc_results.ntc);
-            lcd_clear();
-            lcd_write(lrd_str);
-            lcd_write(pot_str);
-            //lcd_write(ntc_str);
+            switch(display_mode)
+            {
+                case 0:
+                    sprintf(adc_val, "ldr: %d", adc_results.ldr);
+                    lcd_clear();
+                    lcd_write(adc_val);
+                    break;
+                case 1:
+                    sprintf(adc_val, "ntc: %d", adc_results.ntc);
+                    lcd_clear();
+                    lcd_write(adc_val);
+                    break;
+                case 2:
+                    sprintf(adc_val, "pot: %d", adc_results.pot);
+                    lcd_clear();
+                    lcd_write(adc_val);
+                    break;
+                default:
+                    break;
+            }
         }
 
     }
     vTaskDelete(NULL);
 }
+
 
 
 /* EOF */
