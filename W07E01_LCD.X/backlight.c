@@ -10,7 +10,14 @@ TimerHandle_t backlight_time;
 
 void backlight_timer_callback()
 {
-    TCB3.CCMP = ((adc_result.ldr/10) << 8) | 0x00FF; // Calculate backlight
+    if(adc_result.ldr > ((1023 * 2) / 3))
+    {
+        TCB3.CCMP = 0x80FF;
+    }
+    else
+    {
+        TCB3.CCMP = 0x20FF;
+    }
 }
 void timeout_timer_callback()
 {
