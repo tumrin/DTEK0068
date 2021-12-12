@@ -16,6 +16,7 @@ extern "C" {
 void backlight_task(void *param);
 void backlight_init(void);
 
+
 #ifdef	__cplusplus
 }
 #endif

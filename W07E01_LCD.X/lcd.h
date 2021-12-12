@@ -50,6 +50,7 @@ void lcd_clear(void);
 
 void lcd_task(void *param);
 
+// Variables
 uint8_t display_mode;
 uint8_t leftmost_char;
 char display_man_text[16];

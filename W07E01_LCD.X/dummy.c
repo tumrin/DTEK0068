@@ -25,27 +25,21 @@ void led_timer_callback()
 // Task
 void dummy_task(void *param)
 {
-    PORTF.DIRSET = PIN5_bm;
+    PORTF.DIRSET = PIN5_bm; // Set PF5 to output
+    
     TimerHandle_t led_timer = xTimerCreate
-      ( /* Just a text name, not used by the RTOS
-        kernel. */
-        "led",
-        /* The timer period in ticks, must be
-        greater than 0. */
+    (
+        "Led",
         100,
-        /* The timers will auto-reload themselves
-        when they expire. */
         pdTRUE,
-        /* The ID is used to store a count of the
-        number of times the timer has expired, which
-        is initialised to 0. */
         ( void * ) 5,
-        /* Each timer calls the same callback when
-        it expires. */
-        led_timer_callback);
+        led_timer_callback
+    );
     
     xTimerStart(led_timer, 0);
+    
     vTaskDelay(200);
+    
     for(;;)
     {
         vTaskDelay(100);

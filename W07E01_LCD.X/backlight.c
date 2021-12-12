@@ -10,8 +10,7 @@ TimerHandle_t backlight_time;
 
 void backlight_timer_callback()
 {
-    uint16_t ratio = adc_result.ldr*10/1023;
-    TCB3.CCMP = 0xFFFF - (0xFFFF/10*ratio);
+    TCB3.CCMP = ((adc_result.ldr/10) << 8) | 0x00FF; // Calculate backlight
 }
 void timeout_timer_callback()
 {
@@ -29,39 +28,21 @@ void timeout_timer_callback()
 void backlight_task(void *param)
 {
     backlight_time = xTimerCreate
-      ( /* Just a text name, not used by the RTOS
-        kernel. */
+    (
         "Backlight",
-        /* The timer period in ticks, must be
-        greater than 0. */
         100,
-        /* The timers will auto-reload themselves
-        when they expire. */
         pdTRUE,
-        /* The ID is used to store a count of the
-        number of times the timer has expired, which
-        is initialised to 0. */
         ( void * ) 3,
-        /* Each timer calls the same callback when
-        it expires. */
-        backlight_timer_callback);
+        backlight_timer_callback
+    );
     TimerHandle_t timeout_time = xTimerCreate
-      ( /* Just a text name, not used by the RTOS
-        kernel. */
+    (
         "timeout",
-        /* The timer period in ticks, must be
-        greater than 0. */
         10000,
-        /* The timers will auto-reload themselves
-        when they expire. */
         pdFALSE,
-        /* The ID is used to store a count of the
-        number of times the timer has expired, which
-        is initialised to 0. */
         ( void * ) 4,
-        /* Each timer calls the same callback when
-        it expires. */
-        timeout_timer_callback);
+        timeout_timer_callback
+    );
     xTimerStart(backlight_time, 0);
     
     vTaskDelay(200);
