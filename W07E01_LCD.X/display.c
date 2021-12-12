@@ -20,7 +20,7 @@ void display_task(void *param)
     
     for(;;)
     {
-        xSemaphoreTake(mutex_handle, 100);
+        xSemaphoreTake(mutex_handle, portMAX_DELAY);
         adc_results = read_adc();
         xQueueOverwrite(lcd_queue, &adc_results);
         xSemaphoreGive(mutex_handle);

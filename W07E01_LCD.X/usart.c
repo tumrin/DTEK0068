@@ -48,7 +48,7 @@ void write_usart(void* param)
     vTaskDelay(200);
 
     for(;;)
-    {       xSemaphoreTake(mutex_handle, 100);
+    {       xSemaphoreTake(mutex_handle, portMAX_DELAY);
             output_buffer = read_adc();
             xSemaphoreGive(mutex_handle);
             sprintf(ldr_str, "LDR: %d\r\n", output_buffer.ldr);

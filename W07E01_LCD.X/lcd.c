@@ -299,14 +299,14 @@ void lcd_task(void *param)
             scroll_timer_callback);
         
     //Start timers
-    xTimerStart(scroll_time, 10);
-    xTimerStart(display_time, 10);
+    xTimerStart(scroll_time, portMAX_DELAY);
+    xTimerStart(display_time, portMAX_DELAY);
     
     char adc_val[10]; //adc value as string
     ADC_result_t adc_results; // Variable to store adc result from queue
     for(;;)
     {
-        if(xQueueReceive(lcd_queue, &adc_results, 100) == pdTRUE)
+        if(xQueueReceive(lcd_queue, &adc_results, portMAX_DELAY) == pdTRUE)
         {
             switch(display_mode)
             {

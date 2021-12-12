@@ -9,7 +9,7 @@
 // Timer callback
 void led_timer_callback()
 {
-    xSemaphoreTake(mutex_handle, 100);
+    xSemaphoreTake(mutex_handle, portMAX_DELAY);
     ADC_result_t adc_result = read_adc();
     xSemaphoreGive(mutex_handle);
     if(adc_result.ntc > adc_result.pot)
@@ -36,7 +36,7 @@ void dummy_task(void *param)
         led_timer_callback
     );
     
-    xTimerStart(led_timer, 0);
+    xTimerStart(led_timer, portMAX_DELAY);
     
     vTaskDelay(200);
     
