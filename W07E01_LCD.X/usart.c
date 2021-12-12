@@ -24,6 +24,9 @@ void USART0_sendString(char *str)
     }
 }
 
+/** Initialization for USART
+ * 
+ */
 void init_usart()
 {
         //Initialize USART0
@@ -34,10 +37,13 @@ void init_usart()
     
 }
 
+/** Task for writing to USART
+ * 
+ */
 void write_usart(void* param)
 {
     ADC_result_t output_buffer; // Store value from output queue
-    char ldr_str[12];
+    char ldr_str[12]; // String to write
     
     vTaskDelay(200);
 

@@ -12,9 +12,9 @@
 extern "C" {
 #endif
 
+// Functions
 void backlight_task(void *param);
 void backlight_init(void);
-
 
 #ifdef	__cplusplus
 }

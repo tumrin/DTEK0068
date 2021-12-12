@@ -8,6 +8,7 @@
 #ifndef DUMMY_H
 #define	DUMMY_H
 
+// Functions
 void dummy_task(void *param);
 
 #endif	/* DUMMY_H */

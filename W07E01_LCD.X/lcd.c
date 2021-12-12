@@ -225,6 +225,7 @@ void lcd_init(void)
     LCD_CMD_SEND(0b00000110);
 }
 
+// Timer callbacks
 void display_timer_callback()
 {
     if(display_mode == 2)
@@ -296,13 +297,13 @@ void lcd_task(void *param)
             /* Each timer calls the same callback when
             it expires. */
             scroll_timer_callback);
+        
+    //Start timers
     xTimerStart(scroll_time, 10);
     xTimerStart(display_time, 10);
     
-    char adc_val[10];
-    
-    
-    ADC_result_t adc_results;
+    char adc_val[10]; //adc value as string
+    ADC_result_t adc_results; // Variable to store adc result from queue
     for(;;)
     {
         if(xQueueReceive(lcd_queue, &adc_results, 100) == pdTRUE)

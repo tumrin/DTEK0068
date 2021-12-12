@@ -6,6 +6,7 @@
 #include "adc.h"
 #include "timers.h"
 
+// Timer callback
 void led_timer_callback()
 {
     xSemaphoreTake(mutex_handle, 100);
@@ -21,6 +22,7 @@ void led_timer_callback()
     }
 }
 
+// Task
 void dummy_task(void *param)
 {
     PORTF.DIRSET = PIN5_bm;

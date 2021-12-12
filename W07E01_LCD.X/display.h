@@ -12,7 +12,10 @@
 extern "C" {
 #endif
 
+// Functions
 void display_task(void *param);
+
+// Variables
 QueueHandle_t lcd_queue;
 
 

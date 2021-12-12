@@ -4,6 +4,10 @@
 #include "adc.h"
 #include "usart.h"
 
+/** Function for reading adc
+ * 
+ * @return 
+ */
 ADC_result_t read_adc()
 {
     ADC_result_t adc_result;
@@ -14,6 +18,8 @@ ADC_result_t read_adc()
     
     return adc_result;
 }
+
+
 uint16_t read_ldr()
 {
 

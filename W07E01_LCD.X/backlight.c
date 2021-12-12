@@ -22,6 +22,10 @@ void timeout_timer_callback()
     TCB3.CCMP = 0;
 }
 
+/** Task for controlling backlight on lcd
+ * 
+ * @param param
+ */
 void backlight_task(void *param)
 {
     backlight_time = xTimerCreate

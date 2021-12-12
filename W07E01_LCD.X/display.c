@@ -8,6 +8,10 @@
 #include "display.h"
 #include "usart.h"
 
+/** Task for reading adc and sending values to lcd via queue
+ * 
+ * @param param
+ */
 void display_task(void *param)
 {
     ADC_result_t adc_results;

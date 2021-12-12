@@ -1,9 +1,8 @@
 /*
  * File:   main.c
  * Author: Tuomas Rinne
- * Description: Exercise W07E01 - LCD. Program to show number from 0-9
- * on display when read from USART. Displays E and sends error message via USART
- * if character is not a number between 0 and 9.
+ * Description: Exercise W07E01 - LCD. Prgoram to display adc values on lcd
+ * display along wit scrolling text. Also has self adjusting backlight.
  * Created on 7 December 2021, 14:37
  * Target device: ATmega4809 Curiosity Nano
  */
@@ -38,21 +37,22 @@ void TCB3_init (void)
   
 int main(void) // Macro to set baud rate
 {
-    mutex_handle = xSemaphoreCreateMutex();
-    lcd_queue = xQueueCreate(1, sizeof(ADC_result_t));
+    
+    mutex_handle = xSemaphoreCreateMutex(); //Mutex handle for adc
+    lcd_queue = xQueueCreate(1, sizeof(ADC_result_t)); // queue for lcd
+    
     // Initialization
     VREF.CTRLA |= VREF_ADC0REFSEL_2V5_gc; // Set internal voltage ref to 2.5V
-        //Read LDR value
     ADC0.CTRLC &= ~(ADC_REFSEL_VDDREF_gc); //Clear REFSEL bits
-    //Voltage reference to internal 2.5V
-    ADC0.CTRLC |= ADC_REFSEL_INTREF_gc;
-        // Set prescaler of 16 
-    ADC0.CTRLC |= ADC_PRESC_DIV16_gc; 
-    ADC0.CTRLA |= ADC_ENABLE_bm;
+    ADC0.CTRLC |= ADC_REFSEL_INTREF_gc; //Voltage reference to internal 2.5V
+    ADC0.CTRLC |= ADC_PRESC_DIV16_gc; // Set prescaler of 16 
+    ADC0.CTRLA |= ADC_ENABLE_bm; // Enable ADC
+    
     init_usart();
     TCB3_init();
     backlight_init();
     
+    // Create tasks
     xTaskCreate( 
         display_task, 
         "display", 
