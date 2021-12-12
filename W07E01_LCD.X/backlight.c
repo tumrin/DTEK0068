@@ -55,13 +55,11 @@ void backlight_task(void *param)
     vTaskDelay(200);
     for(;;)
     {
-        xSemaphoreTake(mutex_handle, portMAX_DELAY);
-        adc_result = read_adc();
-        xSemaphoreGive(mutex_handle);
+        adc_result = read_adc(); // Read adc
         
-        // Check if potentiometer has not been changed. Use 10 as margin of
+        // Check if potentiometer has not been changed. Use 5 as margin of
         // error since pot reading seems to fluctuate a bit
-        if(adc_result.pot < (last_pot + 10) && adc_result.pot > (last_pot - 10))
+        if(adc_result.pot < (last_pot + 5) && adc_result.pot > (last_pot - 5))
         {
             if(xTimerIsTimerActive(timeout_time) == pdFALSE)
             {

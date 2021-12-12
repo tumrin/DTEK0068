@@ -9,9 +9,7 @@
 // Timer callback
 void led_timer_callback()
 {
-    xSemaphoreTake(mutex_handle, portMAX_DELAY);
     ADC_result_t adc_result = read_adc();
-    xSemaphoreGive(mutex_handle);
     if(adc_result.ntc > adc_result.pot)
     {
         PORTF.OUTSET = PIN5_bm;

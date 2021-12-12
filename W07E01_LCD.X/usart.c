@@ -48,9 +48,7 @@ void write_usart(void* param)
 
     for(;;)
     {       
-        xSemaphoreTake(mutex_handle, portMAX_DELAY); // Take mutex
         output_buffer = read_adc(); // Read adc
-        xSemaphoreGive(mutex_handle); // Give Mutex
         sprintf(ldr_str, "LDR: %d\r\n", output_buffer.ldr); // ldr to string
         USART0_sendString(ldr_str); // Send ldr via usart
     }

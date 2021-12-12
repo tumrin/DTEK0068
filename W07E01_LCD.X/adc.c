@@ -10,12 +10,14 @@
  */
 ADC_result_t read_adc()
 {
+    xSemaphoreTake(mutex_handle, portMAX_DELAY); // Take mutex lock
     ADC_result_t adc_result;
     
     adc_result.ldr = read_ldr();
     adc_result.ntc = read_ntc();
     adc_result.pot = read_pot();
     
+    xSemaphoreGive(mutex_handle); // Release mutex
     return adc_result;
 }
 
