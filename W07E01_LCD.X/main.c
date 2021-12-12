@@ -91,7 +91,7 @@ int main(void) // Macro to set baud rate
         "dummy", 
         configMINIMAL_STACK_SIZE, 
         NULL, 
-        tskIDLE_PRIORITY, 
+        1, 
         NULL 
     ); 
     // Start the scheduler 
