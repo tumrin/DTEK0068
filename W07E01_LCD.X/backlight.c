@@ -23,7 +23,7 @@ void timeout_timer_callback()
 {
     if(xTimerIsTimerActive(backlight_time) == pdTRUE)
     {
-        xTimerStop(backlight_time, portMAX_DELAY);
+        xTimerStop(backlight_time, 0);
     }
     TCB3.CCMP = 0;
 }
@@ -50,7 +50,7 @@ void backlight_task(void *param)
         ( void * ) 4,
         timeout_timer_callback
     );
-    xTimerStart(backlight_time, portMAX_DELAY);
+    xTimerStart(backlight_time, 0);
     
     vTaskDelay(200);
     for(;;)
@@ -59,21 +59,21 @@ void backlight_task(void *param)
         adc_result = read_adc();
         xSemaphoreGive(mutex_handle);
         
-        if(last_pot == adc_result.pot)
+        if(adc_result.pot != last_pot)
         {
             if(xTimerIsTimerActive(timeout_time) == pdFALSE)
             {
-                xTimerStart(timeout_time, portMAX_DELAY);
+                xTimerStart(timeout_time, 0);
             }
         }
         else{
             if(xTimerIsTimerActive(backlight_time) == pdFALSE)
             {
-                xTimerStart(backlight_time, portMAX_DELAY);
+                xTimerStart(backlight_time, 0);
             }
             if(xTimerIsTimerActive(timeout_time) == pdTRUE)
             {
-                xTimerStop(timeout_time, portMAX_DELAY);
+                xTimerStop(timeout_time,0);
             }
             last_pot = adc_result.pot;
         }
