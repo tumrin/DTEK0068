@@ -14,13 +14,13 @@
 #include "task.h" 
 #include "queue.h"
 #include <string.h>
-#include "../adc.h"
-#include "../usart.h"
-#include "../display.h"
-#include "../dummy.h"
-#include "../display.h"
-#include "../backlight.h"
-#include "../lcd.h"
+#include "adc.h"
+#include "usart.h"
+#include "display.h"
+#include "dummy.h"
+#include "display.h"
+#include "backlight.h"
+#include "lcd.h"
   
 void TCB3_init (void)
 {
