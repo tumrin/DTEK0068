@@ -12,11 +12,13 @@ void backlight_timer_callback()
 {
     uint16_t ratio = adc_result.ldr*10/1023;
     TCB3.CCMP = 0xFFFF - (0xFFFF/10*ratio);
-    xTimerStart(backlight_time, 0);
 }
 void timeout_timer_callback()
 {
-    xTimerStop(backlight_time, 0);
+    if(xTimerIsTimerActive(backlight_time) == pdTRUE)
+    {
+        xTimerStop(backlight_time, 0);
+    }
     TCB3.CCMP = 0;
 }
 
@@ -66,17 +68,17 @@ void backlight_task(void *param)
         xSemaphoreGive(mutex_handle);
         if(last_pot == adc_result.pot)
         {
-            if(!xTimerIsTimerActive(timeout_time))
+            if(xTimerIsTimerActive(timeout_time) == pdFALSE)
             {
                 xTimerStart(timeout_time, 0);
             }
         }
         else{
-            if(!xTimerIsTimerActive(backlight_time))
+            if(xTimerIsTimerActive(backlight_time) == pdFALSE)
             {
                 xTimerStart(backlight_time, 0);
             }
-            if(xTimerIsTimerActive(timeout_time))
+            if(xTimerIsTimerActive(timeout_time) == pdTRUE)
             {
                 xTimerStop(timeout_time,0);
             }

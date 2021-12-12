@@ -41,6 +41,7 @@ void dummy_task(void *param)
         /* Each timer calls the same callback when
         it expires. */
         led_timer_callback);
+    
     xTimerStart(led_timer, 0);
     vTaskDelay(200);
     for(;;)
