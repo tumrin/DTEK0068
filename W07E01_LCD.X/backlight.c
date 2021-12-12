@@ -50,7 +50,8 @@ void backlight_task(void *param)
         ( void * ) 4,
         timeout_timer_callback
     );
-    xTimerStart(backlight_time, 0);
+    
+    xTimerStart(backlight_time, 0); // Start backlight timer
     
     vTaskDelay(200);
     for(;;)
@@ -58,7 +59,7 @@ void backlight_task(void *param)
         adc_result = read_adc(); // Read adc
         
         // Check if potentiometer has not been changed. Use 5 as margin of
-        // error since pot reading seems to fluctuate a bit
+        // error since pot reading seems to fluctuate a bit.
         if(adc_result.pot < (last_pot + 5) && adc_result.pot > (last_pot - 5))
         {
             if(xTimerIsTimerActive(timeout_time) == pdFALSE)
@@ -76,7 +77,7 @@ void backlight_task(void *param)
                 xTimerStop(timeout_time, portMAX_DELAY);
             }
         }
-        last_pot = adc_result.pot;
+        last_pot = adc_result.pot; // Save last pot value to compare new reading
     }
     vTaskDelete(NULL);
 }
