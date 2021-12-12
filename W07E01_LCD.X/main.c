@@ -91,7 +91,7 @@ int main(void) // Macro to set baud rate
         "dummy", 
         configMINIMAL_STACK_SIZE, 
         NULL, 
-        1, 
+        1, // Requested to be highest priority task in requirements
         NULL 
     ); 
     // Start the scheduler 

@@ -31,9 +31,8 @@ void init_usart()
 {
         //Initialize USART0
     PORTA.DIRSET = PIN0_bm; // Set PA0 to output
-    USART0.BAUD = (uint16_t)USART0_BAUD_RATE(9600);
-    USART0.CTRLB |= USART_TXEN_bm;
-    USART0.CTRLB |= USART_RXEN_bm;
+    USART0.BAUD = (uint16_t)USART0_BAUD_RATE(9600); // Set baud rate to 9600
+    USART0.CTRLB |= USART_TXEN_bm; // Enable TX
     
 }
 
@@ -48,11 +47,12 @@ void write_usart(void* param)
     vTaskDelay(200);
 
     for(;;)
-    {       xSemaphoreTake(mutex_handle, portMAX_DELAY);
-            output_buffer = read_adc();
-            xSemaphoreGive(mutex_handle);
-            sprintf(ldr_str, "LDR: %d\r\n", output_buffer.ldr);
-            USART0_sendString(ldr_str);
+    {       
+        xSemaphoreTake(mutex_handle, portMAX_DELAY); // Take mutex
+        output_buffer = read_adc(); // Read adc
+        xSemaphoreGive(mutex_handle); // Give Mutex
+        sprintf(ldr_str, "LDR: %d\r\n", output_buffer.ldr); // ldr to string
+        USART0_sendString(ldr_str); // Send ldr via usart
     }
     vTaskDelete(NULL);
 }

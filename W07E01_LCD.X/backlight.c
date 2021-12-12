@@ -4,8 +4,8 @@
 #include "adc.h"
 #include "timers.h"
 
-ADC_result_t adc_result;
-uint16_t last_pot;
+volatile ADC_result_t adc_result;
+volatile uint16_t last_pot;
 TimerHandle_t backlight_time;
 
 void backlight_timer_callback()
@@ -23,7 +23,7 @@ void timeout_timer_callback()
 {
     if(xTimerIsTimerActive(backlight_time) == pdTRUE)
     {
-        xTimerStop(backlight_time, 0);
+        xTimerStop(backlight_time, portMAX_DELAY);
     }
     TCB3.CCMP = 0;
 }
@@ -55,28 +55,30 @@ void backlight_task(void *param)
     vTaskDelay(200);
     for(;;)
     {
-        xSemaphoreTake(mutex_handle, 100);
+        xSemaphoreTake(mutex_handle, portMAX_DELAY);
         adc_result = read_adc();
         xSemaphoreGive(mutex_handle);
         
-        if(adc_result.pot != last_pot)
+        // Check if potentiometer has not been changed. Use 10 as margin of
+        // error since pot reading seems to fluctuate a bit
+        if(adc_result.pot < (last_pot + 10) && adc_result.pot > (last_pot - 10))
         {
             if(xTimerIsTimerActive(timeout_time) == pdFALSE)
             {
-                xTimerStart(timeout_time, 0);
+                xTimerStart(timeout_time, portMAX_DELAY);
             }
         }
         else{
             if(xTimerIsTimerActive(backlight_time) == pdFALSE)
             {
-                xTimerStart(backlight_time, 0);
+                xTimerStart(backlight_time, portMAX_DELAY);
             }
             if(xTimerIsTimerActive(timeout_time) == pdTRUE)
             {
-                xTimerStop(timeout_time,0);
+                xTimerStop(timeout_time, portMAX_DELAY);
             }
-            last_pot = adc_result.pot;
         }
+        last_pot = adc_result.pot;
     }
     vTaskDelete(NULL);
 }

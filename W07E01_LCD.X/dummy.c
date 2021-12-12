@@ -42,7 +42,7 @@ void dummy_task(void *param)
     
     for(;;)
     {
-        vTaskDelay(100);
+        vTaskDelay(100); // Delay to let other tasks run
     }
     vTaskDelete(NULL);
     

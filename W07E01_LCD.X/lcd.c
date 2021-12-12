@@ -263,39 +263,19 @@ void lcd_task(void *param)
     direction = 0;
     leftmost_char = 0;
     TimerHandle_t display_time = xTimerCreate
-          ( /* Just a text name, not used by the RTOS
-            kernel. */
+          (
             "Timer",
-            /* The timer period in ticks, must be
-            greater than 0. */
             666,
-            /* The timers will auto-reload themselves
-            when they expire. */
             pdTRUE,
-            /* The ID is used to store a count of the
-            number of times the timer has expired, which
-            is initialised to 0. */
             ( void * ) 0,
-            /* Each timer calls the same callback when
-            it expires. */
             display_timer_callback);
     
         TimerHandle_t scroll_time = xTimerCreate
-          ( /* Just a text name, not used by the RTOS
-            kernel. */
+          ( 
             "Scroll",
-            /* The timer period in ticks, must be
-            greater than 0. */
             200,
-            /* The timers will auto-reload themselves
-            when they expire. */
             pdTRUE,
-            /* The ID is used to store a count of the
-            number of times the timer has expired, which
-            is initialised to 0. */
             ( void * ) 1,
-            /* Each timer calls the same callback when
-            it expires. */
             scroll_timer_callback);
         
     //Start timers
@@ -329,9 +309,11 @@ void lcd_task(void *param)
                     break;
             }
         }
-        lcd_cursor_set(1, 0);
+        lcd_cursor_set(1, 0);// Set cursor to lower line
+        
+        // Copy 16 char segment of whole text to variable
         strncpy(display_man_text, man_text+leftmost_char, 16);
-        lcd_write(display_man_text);
+        lcd_write(display_man_text); // Display segment of text
     }
     vTaskDelete(NULL);
 }
