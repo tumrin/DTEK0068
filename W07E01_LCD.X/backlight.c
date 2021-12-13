@@ -10,14 +10,11 @@ TimerHandle_t backlight_time;
 
 void backlight_timer_callback()
 {
-    if(adc_result.ldr > ((1023 * 2) / 3))
-    {
-        TCB3.CCMP = 0x80FF;
-    }
-    else
-    {
-        TCB3.CCMP = 0x20FF;
-    }
+    // Calculate brightness. Default is 0x80FF. Max ldr is 1024 by adding 256
+    // We achieve range of 2-128(0x02-0x80) for backlight. Lower byte will stay
+    // at 0xFF. Having 2 as minimum ensures that backlight is always on since
+    // only time we want it off will be when timout timer is triggered.
+    TCB3.CCMP = (((adc_result.ldr+256)/100) << 12) | 0x00FF;
 }
 void timeout_timer_callback()
 {
@@ -25,7 +22,7 @@ void timeout_timer_callback()
     {
         xTimerStop(backlight_time, portMAX_DELAY);
     }
-    TCB3.CCMP = 0;
+    TCB3.CCMP = 0x00FF;
 }
 
 /** Task for controlling backlight on lcd
