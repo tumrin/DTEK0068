@@ -65,6 +65,8 @@ void backlight_task(void *param)
             }
         }
         else{
+            // Save last pot value to compare new reading
+            last_pot = adc_result.pot;
             if(xTimerIsTimerActive(backlight_time) == pdFALSE)
             {
                 xTimerStart(backlight_time, portMAX_DELAY);
@@ -74,7 +76,6 @@ void backlight_task(void *param)
                 xTimerStop(timeout_time, portMAX_DELAY);
             }
         }
-        last_pot = adc_result.pot; // Save last pot value to compare new reading
     }
     vTaskDelete(NULL);
 }
