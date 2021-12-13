@@ -265,7 +265,7 @@ void lcd_task(void *param)
     TimerHandle_t display_time = xTimerCreate
           (
             "Timer",
-            666,
+            660,
             pdTRUE,
             ( void * ) 0,
             display_timer_callback);
