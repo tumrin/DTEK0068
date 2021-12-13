@@ -10,6 +10,8 @@
 void led_timer_callback()
 {
     ADC_result_t adc_result = read_adc();
+    
+    // LED on if ntc is greater than pot
     if(adc_result.ntc > adc_result.pot)
     {
         PORTF.OUTSET = PIN5_bm;
@@ -25,6 +27,7 @@ void dummy_task(void *param)
 {
     PORTF.DIRSET = PIN5_bm; // Set PF5 to output
     
+    // Create and start timer
     TimerHandle_t led_timer = xTimerCreate
     (
         "Led",

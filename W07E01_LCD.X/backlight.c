@@ -59,6 +59,7 @@ void backlight_task(void *param)
         // error since pot reading seems to fluctuate a bit.
         if(adc_result.pot < (last_pot + 5) && adc_result.pot > (last_pot - 5))
         {
+            // Sart timeout timer
             if(xTimerIsTimerActive(timeout_time) == pdFALSE)
             {
                 xTimerStart(timeout_time, portMAX_DELAY);
@@ -67,10 +68,13 @@ void backlight_task(void *param)
         else{
             // Save last pot value to compare new reading
             last_pot = adc_result.pot;
+            
+            // Start backlight timer
             if(xTimerIsTimerActive(backlight_time) == pdFALSE)
             {
                 xTimerStart(backlight_time, portMAX_DELAY);
             }
+            // Stop timeout timer
             if(xTimerIsTimerActive(timeout_time) == pdTRUE)
             {
                 xTimerStop(timeout_time, portMAX_DELAY);

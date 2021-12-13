@@ -20,8 +20,12 @@ void display_task(void *param)
     
     for(;;)
     {
-        adc_results = read_adc();
+        adc_results = read_adc(); // Read adc
+        
+        // Overwrite queue with new value
         xQueueOverwrite(lcd_queue, &adc_results);
+        
+        // Allow other tasks to run, doesn't seem to work without this
         vTaskDelay(100);
     }
     vTaskDelete(NULL);
