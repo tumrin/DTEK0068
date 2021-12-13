@@ -14,11 +14,11 @@ void led_timer_callback()
     // LED on if ntc is greater than pot
     if(adc_result.ntc > adc_result.pot)
     {
-        PORTF.OUTSET = PIN5_bm;
+        PORTF.OUTCLR = PIN5_bm;
     }
     else
     {
-        PORTF.OUTCLR = PIN5_bm;
+        PORTF.OUTSET = PIN5_bm;
     }
 }
 
