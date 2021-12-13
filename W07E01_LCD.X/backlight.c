@@ -65,7 +65,8 @@ void backlight_task(void *param)
                 xTimerStart(timeout_time, portMAX_DELAY);
             }
         }
-        else{
+        else
+        {
             // Save last pot value to compare new reading
             last_pot = adc_result.pot;
             
